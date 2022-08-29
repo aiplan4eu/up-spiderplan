@@ -17,11 +17,13 @@ problems = get_example_problems()
 
 basic = problems["basic"].problem
 basic_nc = problems["basic_nested_conjunctions"].problem
+robot = problems["robot"].problem
 
-print(basic_nc)
+print(robot)
 
-print(basic.initial_values)
 
 conv = UpCdbConverter()
 
-conv(basic_nc)
+print('Converting...')
+
+conv(robot)

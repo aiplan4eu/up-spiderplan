@@ -38,6 +38,11 @@ class UpCdbConverter:
         goal = self._convert_goal(problem.goals)
         print(goal)
 
+        type_look_up = {}
+        type_domains = self._convert_types(problem)
+
+        operators = self._convert_operators(problem.actions)
+        print(operators)
 
     def _convert_fnode(self, n):
         print("=== FNODE: %s ===" % (str(n)))
@@ -46,10 +51,20 @@ class UpCdbConverter:
         if n.is_fluent_exp():
             if len(n.args) == 0:
                 term = Sym(str(n))
+            else:
+                print("Helllo", n.fluent().name)
+                args = [Sym(n.fluent().name)]
+                for x in n.args:
+                    args.append(self._convert_fnode(x))
+
+                term = Tuple(args)
+                
         elif n.is_bool_constant():
             term = Boolean(n.bool_constant_value())
         elif n.is_int_constant():
             term = Int(n.int_constant_value())
+        elif n.is_object_exp():
+            term = Sym(str(n))
 
         if term is None:
             raise ValueError("Fluent not supported: %s" % str(n))
@@ -194,3 +209,47 @@ class UpCdbConverter:
             g_cdb = self._convert_condition(g, is_goal=True)
             cdbs.append(g_cdb)
         return cdbs
+
+    def _convert_operators(self, ops):
+        spider_ops = []
+        for o in ops:
+            spider_ops.append(self._convert_operator(o))
+        return Set([
+            KeyValue(Sym("operator"), Set(spider_ops))
+            ])
+    
+    def _convert_operator(self, o):
+        print("Converting:", o)
+
+        base_name = Sym(o.name)
+        args = []
+        sig = []
+        for p in o.parameters:
+            x, t = self._convert_parameter(p)
+            args.append(x)
+            sig.append(t)
+
+        print("Args", args)
+        print("Sig", sig)
+            
+        return Sym("NIL")
+
+    def _convert_parameter(self, p, t_look_up):
+        if p not in t_look_up.keys():
+            if p.type.is_bool_type():
+                t_look_up[p] = KeyValue(Sym("t_bool", List([Boolean(True), Boolean(False)]))
+            elif p.type.is_int_type() or p.type.is_real_type:
+                range_type = if p.type.is_int_type() is Sym("int") else Sym("real")
+                lb = if p.type.lower_bound is None InfNeg() else Num(p.type.lower_bound)
+                ub = if p.type.upper_bound is None InfPos() else Num(p.type.lower_bound)
+                type_look_up[p.type] = # TODO: NEED NAME
+                return Tuple([Sym("range"), Tuple([lb, up]), List([KeyValue(Sym("type"), range_type)])])
+        
+        return (Var(p.name), Sym(p.type))
+
+    def _convert_user_types(self, problem, type_look_up):
+        for utype in problem.user_types:
+            name = Sym(utype.name)
+            domain = [self._convert_fnode(o) for o in problem.objects(utype)]
+            type_look_up[utype] = (name, domain)
+            
