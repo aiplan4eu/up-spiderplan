@@ -17,12 +17,14 @@ from functools import partial
 from typing import IO, Callable, List, Dict, Optional, Set, Tuple
 import warnings
 import unified_planning as up
-import unified_planning.solvers
+import unified_planning.engines
 from unified_planning.exceptions import UPUnsupportedProblemTypeError
-from unified_planning.solvers import PlanGenerationResultStatus, GroundingResult, Credits
+from unified_planning.engines import PlanGenerationResultStatus, Credits
 from unified_planning.model import FNode, ProblemKind, Type as UPType
 
-from aiddl_core.representation import Term
+from aiddl_core.representation import Term, Sym
+from aiddl_core.tools.logger import Logger
+from aiddl_external_grpc import GrpcFunction
 
 from converter import UpCdbConverter
 
@@ -36,7 +38,7 @@ credits = Credits('spiderplan',
                   'Spiderplan is an extentable constraint-based hybrid planner.'
                 )
 
-class SolverImpl(unified_planning.solvers.Solver):
+class EngineImpl(unified_planning.engines.Engine):
     def __init__(self, **options):
         if len(options) > 0:
             raise
@@ -45,13 +47,10 @@ class SolverImpl(unified_planning.solvers.Solver):
     def name(self) -> str:
         return "Spiderplan"
 
-    def ground(self, problem: 'up.model.Problem') -> GroundingResult:
-        pass
-
     def solve(self, problem: 'up.model.Problem',
-                callback: Optional[Callable[['up.solvers.PlanGenerationResult'], None]] = None,
+                callback: Optional[Callable[['up.engines.PlanGenerationResult'], None]] = None,
                 timeout: Optional[float] = None,
-                output_stream: Optional[IO[str]] = None) -> 'up.solvers.results.PlanGenerationResult':
+                output_stream: Optional[IO[str]] = None) -> 'up.engines.results.PlanGenerationResult':
         '''This function converts a UP problem to a constraint database and uses Spiderplan to resolve any open flaws.'''
         if not self.supports(problem.kind):
             raise UPUnsupportedProblemTypeError('Spiderplan cannot solve this kind of problem!')
@@ -61,14 +60,14 @@ class SolverImpl(unified_planning.solvers.Solver):
             warnings.warn('Spiderplan does not support output stream.', UserWarning)
             
         cdb = self._convert(problem)
-        solution_cdb = _solve(cdb)
+        solution_cdb = self._solve(cdb)
   
-        actions: List[up.plan.ActionInstance] = []
-        if solution == Sym("NIL"):
-            return up.plan.FinalReport(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
+        actions: List[up.plans.ActionInstance] = []
+        if solution_cdb == Sym("NIL"):
+            return up.plans.FinalReport(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
 
-        plan = _extract_plan(solution_cdb)
-        return up.solvers.PlanGenerationResult(PlanGenerationResultStatus.SOLVED_SATISFICING, plan, self.name)
+        plan = self._extract_plan(solution_cdb)
+        return up.engines.PlanGenerationResult(PlanGenerationResultStatus.SOLVED_SATISFICING, plan, self.name)
 
 
     def _convert(self, problem: 'unified_planning.model.Problem') -> Term:
@@ -77,13 +76,17 @@ class SolverImpl(unified_planning.solvers.Solver):
 
     def _solve(self, cdb: 'aiddl_core.representation.Set') -> Term:
         # Call Spiderplan and get resulting CDB or NIL if no solution exists.
-        return Sym("NIL")
+        spiderplan_proxy = GrpcFunction("localhost", 8011, Sym("org.spiderplan.unified-planning.basic-graph-search"))
 
-    def _extract_plan(self, cdb: 'aiddl_core.representation.Set') -> up.plan.Plan:
+        print(Logger.pretty_print(cdb, 0))
+
+        return spiderplan_proxy(cdb)
+
+    def _extract_plan(self, cdb: 'aiddl_core.representation.Set') -> up.plans.Plan:
         # Convert CDB to a plan type supported by UP
         # -> sequence or partial-order based on EST in propagated STN 
-        actions: List[up.plan.ActionInstance] = []
-        return up.plan.SequentialPlan(actions)
+        actions: List[up.plans.ActionInstance] = []
+        return up.plans.SequentialPlan(actions)
 
 
     @staticmethod
@@ -92,11 +95,12 @@ class SolverImpl(unified_planning.solvers.Solver):
         supported_kind.set_problem_class('ACTION_BASED')
         supported_kind.set_typing('FLAT_TYPING')
         supported_kind.set_typing('HIERARCHICAL_TYPING')
+        supported_kind.set_conditions_kind("NEGATIVE_CONDITIONS")
         return supported_kind
 
     @staticmethod
     def supports(problem_kind: 'up.model.ProblemKind') -> bool:
-        return problem_kind <= SolverImpl.supported_kind()
+        return problem_kind <= EngineImpl.supported_kind()
 
     @staticmethod
     def is_oneshot_planner():
@@ -107,7 +111,7 @@ class SolverImpl(unified_planning.solvers.Solver):
         return False
 
     @staticmethod
-    def get_credits(**kwargs) -> Optional[unified_planning.solvers.Credits]:
+    def get_credits(**kwargs) -> Optional[unified_planning.engines.Credits]:
         return credits
 
     def destroy(self):
