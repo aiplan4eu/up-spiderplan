@@ -21,20 +21,10 @@ problems = get_example_problems()
 basic = problems["basic"].problem
 basic_nc = problems["basic_nested_conjunctions"].problem
 robot = problems["robot"].problem
+basic_wc = problems["basic_with_costs"].problem
+counter_2_50 = problems["counter_to_50"].problem
 
-print(robot)
-
-
-conv = UpCdbConverter()
-
-print('Converting...')
-
-r = conv(basic)
-
-print(Logger.pretty_print(r, 0))
-
-print(basic.kind)
+print(basic_nc)
 
 solver = EngineImpl()
-
-solver.solve(basic)
+solver.solve(basic_nc)

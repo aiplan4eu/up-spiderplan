@@ -1,7 +1,9 @@
+import unified_planning.model.problem
 from unified_planning.test.examples import get_example_problems
 from unified_planning.model.operators import OperatorKind
+from unified_planning.model.problem import Problem
 
-from aiddl_core.representation import Sym
+from aiddl_core.representation import Sym, Num, Real
 from aiddl_core.representation import Boolean
 from aiddl_core.representation import Tuple
 from aiddl_core.representation import List
@@ -14,20 +16,20 @@ from aiddl_core.representation import Infinity
 from aiddl_core.tools.logger import Logger
 
 OpMap = {}
-OpMap[OperatorKind.AND] = Sym("and")
-OpMap[OperatorKind.OR] = Sym("or")
-OpMap[OperatorKind.NOT] = Sym("not")
-OpMap[OperatorKind.IMPLIES] = Sym("implies")
-OpMap[OperatorKind.IFF] = Sym("iff")
-OpMap[OperatorKind.EXISTS] = Sym("exists")
-OpMap[OperatorKind.FORALL] = Sym("forall")
-OpMap[OperatorKind.PLUS] = Sym("+")
-OpMap[OperatorKind.MINUS] = Sym("-")
-OpMap[OperatorKind.TIMES] = Sym("*")
-OpMap[OperatorKind.DIV] = Sym("div")
-OpMap[OperatorKind.EQUALS] = Sym("=")
-OpMap[OperatorKind.LE] = Sym("<=")
-OpMap[OperatorKind.LT] = Sym("<")
+OpMap[OperatorKind.AND] = Sym("org.aiddl.eval.logic.and")
+OpMap[OperatorKind.OR] = Sym("org.aiddl.eval.logic.or")
+OpMap[OperatorKind.NOT] = Sym("org.aiddl.eval.logic.not")
+OpMap[OperatorKind.IMPLIES] = Sym("org.aiddl.eval.logic.implies")
+OpMap[OperatorKind.IFF] = Sym("org.aiddl.eval.logic.iff")
+OpMap[OperatorKind.EXISTS] = Sym("org.aiddl.eval.logic.exists")
+OpMap[OperatorKind.FORALL] = Sym("org.aiddl.eval.logic.forall")
+OpMap[OperatorKind.PLUS] = Sym("org.aiddl.eval.numerical.add")
+OpMap[OperatorKind.MINUS] = Sym("org.aiddl.eval.numerical.sub")
+OpMap[OperatorKind.TIMES] = Sym("org.aiddl.eval.numerical.mult")
+OpMap[OperatorKind.DIV] = Sym("org.aiddl.eval.numerical.div")
+OpMap[OperatorKind.EQUALS] = Sym("org.aiddl.eval.equals")
+OpMap[OperatorKind.LE] = Sym("org.aiddl.eval.numerical.less-than-eq")
+OpMap[OperatorKind.LT] = Sym("org.aiddl.eval.numerical.less-than")
 
 
 def merge_cdb(a, b):
@@ -69,7 +71,12 @@ class UpCdbConverter:
 
         operators = self._convert_operators(problem.actions, type_look_up)
         cdb = merge_cdb(cdb, operators)
-        print("DOMAINS:", type_look_up)
+
+        signatures = self._convert_fluents(problem, type_look_up)
+        cdb = merge_cdb(cdb, signatures)
+
+        cdb = merge_cdb(cdb, self._convert_domains(type_look_up))
+
         return cdb
         
     def _convert_fnode(self, n):
@@ -100,6 +107,27 @@ class UpCdbConverter:
 
         # print("=== TERM: %s ===" % (str(term)))
         return term
+
+    def _convert_fluents(self, problem: Problem, t_look_up):
+        signatures = []
+        for f in problem.fluents:
+            name = Sym(str(f.name))
+            r_type = self._convert_type(f.type, t_look_up)
+            signature = [self._convert_type(s.type) for s in f.signature]
+            if len(signature) == 0:
+                signatures.append(KeyValue(name, r_type))
+            else:
+                signatures.append(KeyValue(Tuple([name] + signature), r_type))
+
+        return Set([
+            KeyValue(Sym("signature"), Set(signatures))
+        ])
+
+    def _convert_domains(self, t_look_up):
+        domains = []
+        for d in t_look_up.values():
+            domains.append(d)
+        return Set([KeyValue(Sym("domain"), Set(domains))])
 
     def _convert_object(self, o):
         return Sym(o.name)
@@ -194,21 +222,19 @@ class UpCdbConverter:
                                            Boolean(False)]))
                             for x in vars])
             scope = Tuple(scope)
-            constraint_exp = List([
+            constraint_exp = [
                 KeyValue(Sym("variables"), vars),
                 KeyValue(Sym("domains"), domains),
                 KeyValue(Sym("constraints"),
                          Set([Tuple([
                              scope,
                              Tuple([
-                                 Sym("lambda"),
+                                 Sym("org.aiddl.eval.lambda"),
                                  scope,
-                                 constraint_term])])]))])
+                                 constraint_term])])]))]
             
             
-            csp.append(constraint_exp)
-            print(constraint_exp)
-            print(fluents)
+            csp += constraint_exp
 
         cdb = []
         if len(goals) > 0:
@@ -271,15 +297,28 @@ class UpCdbConverter:
 
     def _convert_operators(self, ops, t_look_up):
         spider_ops = []
+        signatures = []
         for o in ops:
-            spider_ops.append(self._convert_operator(o, t_look_up))
+            spider_op = self._convert_operator(o, t_look_up)
+
+            name = spider_op[Sym("name")]
+            signature = spider_op[Sym("signature")]
+
+            if len(signature) == 0:
+                signatures.append(KeyValue(name, Sym("t_bool")))
+            else:
+                sig = [name]
+                for p in signature:
+                    sig.append(p.get_value())
+                signatures.append(KeyValue(Tuple(sig), Sym("t_bool")))
+
+            spider_ops.append(spider_op)
         return Set([
-            KeyValue(Sym("operator"), Set(spider_ops))
-            ])
+            KeyValue(Sym("operator"), Set(spider_ops)),
+            KeyValue(Sym("signature"), Set(signatures)),
+        ])
     
     def _convert_operator(self, o, t_look_up):
-        print("Converting:", o)
-
         base_name = Sym(o.name)
         id_var = Var('ID')
         op_id = Tuple([base_name, id_var])
@@ -292,7 +331,7 @@ class UpCdbConverter:
 
         preconditions = []
         effects = []
-        temporal = []
+        temporal = [Tuple([Sym("duration"), op_id, Tuple([Int(1), Infinity.pos()])])]
         csp = []
         for p in o.preconditions:
             constraints = self._convert_condition(p, is_goal=False, op_id=op_id)
@@ -318,7 +357,10 @@ class UpCdbConverter:
                 for p in constraints[Sym('temporal')]:
                     temporal.append(p)
 
-        name = Tuple(args)
+        if len(args) == 1:
+            name = args[0]
+        else:
+            name = Tuple(args)
         signature = List(sig)
 
         print(preconditions)
@@ -335,8 +377,39 @@ class UpCdbConverter:
             KeyValue(Sym('interval'), op_id),
             KeyValue(Sym('preconditions'), List(preconditions)),
             KeyValue(Sym('effects'), List(effects)),
-            KeyValue(Sym('constraint'), List(constraint_list))
+            KeyValue(Sym('constraints'), List(constraint_list))
         ])
+
+    def _convert_type(self, t, t_look_up):
+        type_name = None
+        if t.is_bool_type():
+            type_name = Sym("t_bool")
+            t_look_up[t] = KeyValue(type_name, List([Boolean(True), Boolean(False)]))
+        elif t.is_int_type() or t.is_real_type():
+            if t.is_int_type():
+                range_type = Sym("int")
+            else:
+                range_type = Sym("real")
+            if t.lower_bound is None:
+                lb = Infinity.neg()
+            else:
+                if t.is_int_type():
+                    lb = Int(t.lower_bound)
+                else:
+                    lb = Real(t.lower_bound)
+            if t.upper_bound is None:
+                ub = Infinity.pos()
+            else:
+                if t.is_int_type():
+                    ub = Int(t.upper_bound)
+                else:
+                    ub = Real(t.upper_bound)
+            domain = Tuple([Sym("range"), Tuple([lb, ub]), List([KeyValue(Sym("type"), range_type)])])
+            self.next_id += 1
+            type_name = Sym(f't_range-{self.next_id}')
+            t_look_up[t] = KeyValue(type_name, domain)
+
+        return type_name
 
     def _convert_parameter(self, p, t_look_up):
         if p not in t_look_up.keys():
@@ -355,7 +428,7 @@ class UpCdbConverter:
                     ub = Infinity.pos()
                 else:
                     ub = Num(p.type.lower_bound)
-                domain = Tuple([Sym("range"), Tuple([lb, up]), List([KeyValue(Sym("type"), range_type)])])
+                domain = Tuple([Sym("range"), Tuple([lb, ub]), List([KeyValue(Sym("type"), range_type)])])
                 self.next_id += 1
                 t_look_up[p.type] = (Sym(f'range-{self.next_id}'), domain)
 

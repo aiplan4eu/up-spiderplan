@@ -78,9 +78,15 @@ class EngineImpl(unified_planning.engines.Engine):
         # Call Spiderplan and get resulting CDB or NIL if no solution exists.
         spiderplan_proxy = GrpcFunction("localhost", 8011, Sym("org.spiderplan.unified-planning.basic-graph-search"))
 
+        print("SpiderPlan Problem:")
         print(Logger.pretty_print(cdb, 0))
 
-        return spiderplan_proxy(cdb)
+        answer = spiderplan_proxy(cdb)
+
+        print("SpiderPlan Solution:")
+        print(Logger.pretty_print(answer, 0))
+
+        return answer
 
     def _extract_plan(self, cdb: 'aiddl_core.representation.Set') -> up.plans.Plan:
         # Convert CDB to a plan type supported by UP

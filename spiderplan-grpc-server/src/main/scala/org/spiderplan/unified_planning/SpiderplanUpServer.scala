@@ -8,16 +8,18 @@ import org.spiderplan.solver.SpiderPlanFactory
 
 import scala.concurrent.ExecutionContext
 
-def spiderPlanFunction(cdb: Term): Term = {
-  val spiderplan = SpiderPlanFactory.fullGraphSearch(cdb.asCol, 0)
-  spiderplan.solve(cdb.asCol) match {
-    case Some(solution) => solution
-    case None => Sym("NIL")
-  }
-}
-
 @main def runServer = {
   val c = new Container()
+
+  def spiderPlanFunction(cdb: Term): Term = {
+    val spiderplan = SpiderPlanFactory.fullGraphSearch(cdb.asCol, 2)
+
+    val input = c.eval(cdb).asCol
+      spiderplan.solve(input) match {
+        case Some(solution) => solution
+        case None => Sym("NIL")
+      }
+  }
 
   c.addFunction(Sym("org.spiderplan.unified-planning.basic-graph-search"), spiderPlanFunction)
 
