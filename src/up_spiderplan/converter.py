@@ -9,7 +9,7 @@ from aiddl_core.representation import Tuple
 from aiddl_core.representation import List
 from aiddl_core.representation import Set
 from aiddl_core.representation import Int
-from aiddl_core.representation import KeyValue
+from aiddl_core.representation import KeyVal
 from aiddl_core.representation import Var
 from aiddl_core.representation import Infinity
 
@@ -49,7 +49,7 @@ def merge_cdb(a, b):
 
     r = []
     for k in result.keys():
-        r.append(KeyValue(k, result[k]))
+        r.append(KeyVal(k, result[k]))
     return Set(set(r)) #  for k, v in result])
         
         
@@ -115,19 +115,19 @@ class UpCdbConverter:
             r_type = self._convert_type(f.type, t_look_up)
             signature = [self._convert_type(s.type) for s in f.signature]
             if len(signature) == 0:
-                signatures.append(KeyValue(name, r_type))
+                signatures.append(KeyVal(name, r_type))
             else:
-                signatures.append(KeyValue(Tuple([name] + signature), r_type))
+                signatures.append(KeyVal(Tuple([name] + signature), r_type))
 
         return Set([
-            KeyValue(Sym("signature"), Set(signatures))
+            KeyVal(Sym("signature"), Set(signatures))
         ])
 
     def _convert_domains(self, t_look_up):
         domains = []
         for d in t_look_up.values():
             domains.append(d)
-        return Set([KeyValue(Sym("domain"), Set(domains))])
+        return Set([KeyVal(Sym("domain"), Set(domains))])
 
     def _convert_object(self, o):
         return Sym(o.name)
@@ -183,7 +183,7 @@ class UpCdbConverter:
                 g_var = self._convert_fnode(c)
             g_val = Boolean(not c.is_not())
             
-            s = Tuple([i, KeyValue(g_var, g_val)])
+            s = Tuple([i, KeyVal(g_var, g_val)])
             d = Tuple([Sym("duration"), i, Tuple([Int(1), Infinity.pos()])])
             if is_goal:
                 goals.append(s)
@@ -205,7 +205,7 @@ class UpCdbConverter:
                 var = self._convert_fnode(fluent)
                 val = fluents[fluent]
                 if var != val:
-                    s = Tuple([i, KeyValue(var, val)])
+                    s = Tuple([i, KeyVal(var, val)])
                     d = Tuple([Sym("duration"), i, Tuple([Int(1), Infinity.pos()])])
                     if is_goal:
                         goals.append(s)
@@ -217,15 +217,15 @@ class UpCdbConverter:
                 scope.append(fluents[fluent])
 
             vars = List(scope)
-            domains = List([KeyValue(x,
+            domains = List([KeyVal(x,
                                      List([Boolean(True),
                                            Boolean(False)]))
                             for x in vars])
             scope = Tuple(scope)
             constraint_exp = [
-                KeyValue(Sym("variables"), vars),
-                KeyValue(Sym("domains"), domains),
-                KeyValue(Sym("constraints"),
+                KeyVal(Sym("variables"), vars),
+                KeyVal(Sym("domains"), domains),
+                KeyVal(Sym("constraints"),
                          Set([Tuple([
                              scope,
                              Tuple([
@@ -238,15 +238,15 @@ class UpCdbConverter:
 
         cdb = []
         if len(goals) > 0:
-            cdb.append(KeyValue(Sym("goal"), List(goals)))
+            cdb.append(KeyVal(Sym("goal"), List(goals)))
         if len(statements) > 0:
-            cdb.append(KeyValue(Sym("statement"), List(statements)))
+            cdb.append(KeyVal(Sym("statement"), List(statements)))
         if len(temporal) > 0:
-            cdb.append(KeyValue(Sym("temporal"), List(temporal)))
+            cdb.append(KeyVal(Sym("temporal"), List(temporal)))
         if len(preconditions) > 0:
-            cdb.append(KeyValue(Sym("preconditions"), List(preconditions)))
+            cdb.append(KeyVal(Sym("preconditions"), List(preconditions)))
         if len(csp) > 0:
-            cdb.append(KeyValue(Sym("csp"), List(csp)))
+            cdb.append(KeyVal(Sym("csp"), List(csp)))
             
         return Set(cdb)
 
@@ -255,7 +255,7 @@ class UpCdbConverter:
         temporal = []
         interval = Tuple([Sym("E%d" % effect_id), Var('ID')])
         s = Tuple([interval,
-                   KeyValue(
+                   KeyVal(
                        self._convert_fnode(e.fluent),
                        self._convert_fnode(e.value))])
 
@@ -265,8 +265,8 @@ class UpCdbConverter:
         temporal.append(m)
         temporal.append(d)
         return Set([
-            KeyValue(Sym("effects"), List(statement)),
-            KeyValue(Sym("temporal"), List(temporal))])
+            KeyVal(Sym("effects"), List(statement)),
+            KeyVal(Sym("temporal"), List(temporal))])
         
     def _convert_initial_values(self, init_vals):
         statements = []
@@ -275,7 +275,7 @@ class UpCdbConverter:
             self.next_id += 1
             interval = Sym("s%d" % self.next_id)
             s = Tuple([interval,
-                       KeyValue(
+                       KeyVal(
                            self._convert_fnode(e),
                            self._convert_fnode(init_vals[e]))])
 
@@ -285,8 +285,8 @@ class UpCdbConverter:
             temporal.append(r)
             temporal.append(d)
         return Set([
-            KeyValue(Sym("statement"), List(statements)),
-            KeyValue(Sym("temporal"), List(temporal))])
+            KeyVal(Sym("statement"), List(statements)),
+            KeyVal(Sym("temporal"), List(temporal))])
 
     def _convert_goal(self, goal):
         goal_cdb = Set([])
@@ -305,17 +305,17 @@ class UpCdbConverter:
             signature = spider_op[Sym("signature")]
 
             if len(signature) == 0:
-                signatures.append(KeyValue(name, Sym("t_bool")))
+                signatures.append(KeyVal(name, Sym("t_bool")))
             else:
                 sig = [name]
                 for p in signature:
                     sig.append(p.get_value())
-                signatures.append(KeyValue(Tuple(sig), Sym("t_bool")))
+                signatures.append(KeyVal(Tuple(sig), Sym("t_bool")))
 
             spider_ops.append(spider_op)
         return Set([
-            KeyValue(Sym("operator"), Set(spider_ops)),
-            KeyValue(Sym("signature"), Set(signatures)),
+            KeyVal(Sym("operator"), Set(spider_ops)),
+            KeyVal(Sym("signature"), Set(signatures)),
         ])
     
     def _convert_operator(self, o, t_look_up):
@@ -366,25 +366,25 @@ class UpCdbConverter:
         print(preconditions)
 
         constraint_list = []
-        constraint_list.append(KeyValue(Sym('temporal'), List(temporal)))
+        constraint_list.append(KeyVal(Sym('temporal'), List(temporal)))
         if len(csp) > 0:
-            constraint_list.append(KeyValue(Sym('csp'), List(csp)))
+            constraint_list.append(KeyVal(Sym('csp'), List(csp)))
                 
         return Tuple([
-            KeyValue(Sym('name'), name),
-            KeyValue(Sym('signature'), signature),
-            KeyValue(Sym('id'), id_var),
-            KeyValue(Sym('interval'), op_id),
-            KeyValue(Sym('preconditions'), List(preconditions)),
-            KeyValue(Sym('effects'), List(effects)),
-            KeyValue(Sym('constraints'), List(constraint_list))
+            KeyVal(Sym('name'), name),
+            KeyVal(Sym('signature'), signature),
+            KeyVal(Sym('id'), id_var),
+            KeyVal(Sym('interval'), op_id),
+            KeyVal(Sym('preconditions'), List(preconditions)),
+            KeyVal(Sym('effects'), List(effects)),
+            KeyVal(Sym('constraints'), List(constraint_list))
         ])
 
     def _convert_type(self, t, t_look_up):
         type_name = None
         if t.is_bool_type():
             type_name = Sym("t_bool")
-            t_look_up[t] = KeyValue(type_name, List([Boolean(True), Boolean(False)]))
+            t_look_up[t] = KeyVal(type_name, List([Boolean(True), Boolean(False)]))
         elif t.is_int_type() or t.is_real_type():
             if t.is_int_type():
                 range_type = Sym("int")
@@ -404,17 +404,17 @@ class UpCdbConverter:
                     ub = Int(t.upper_bound)
                 else:
                     ub = Real(t.upper_bound)
-            domain = Tuple([Sym("range"), Tuple([lb, ub]), List([KeyValue(Sym("type"), range_type)])])
+            domain = Tuple([Sym("range"), Tuple([lb, ub]), List([KeyVal(Sym("type"), range_type)])])
             self.next_id += 1
             type_name = Sym(f't_range-{self.next_id}')
-            t_look_up[t] = KeyValue(type_name, domain)
+            t_look_up[t] = KeyVal(type_name, domain)
 
         return type_name
 
     def _convert_parameter(self, p, t_look_up):
         if p not in t_look_up.keys():
             if p.type.is_bool_type():
-                t_look_up[p] = KeyValue(Sym("t_bool"), List([Boolean(True), Boolean(False)]))
+                t_look_up[p] = KeyVal(Sym("t_bool"), List([Boolean(True), Boolean(False)]))
             elif p.type.is_int_type() or p.type.is_real_type():
                 if p.type.is_int_type():
                     range_type = Sym("int")
@@ -428,7 +428,7 @@ class UpCdbConverter:
                     ub = Infinity.pos()
                 else:
                     ub = Num(p.type.lower_bound)
-                domain = Tuple([Sym("range"), Tuple([lb, ub]), List([KeyValue(Sym("type"), range_type)])])
+                domain = Tuple([Sym("range"), Tuple([lb, ub]), List([KeyVal(Sym("type"), range_type)])])
                 self.next_id += 1
                 t_look_up[p.type] = (Sym(f'range-{self.next_id}'), domain)
 
