@@ -23,7 +23,7 @@ from unified_planning.engines import PlanGenerationResultStatus, Credits
 from unified_planning.model import FNode, ProblemKind, Type as UPType
 
 from aiddl_core.representation import Term, Sym
-from aiddl_core.tools.logger import Logger
+from aiddl_core.util.logger import Logger
 from aiddl_external_grpc import GrpcFunction
 
 from converter import UpCdbConverter
@@ -51,13 +51,15 @@ class EngineImpl(unified_planning.engines.Engine):
                 callback: Optional[Callable[['up.engines.PlanGenerationResult'], None]] = None,
                 timeout: Optional[float] = None,
                 output_stream: Optional[IO[str]] = None) -> 'up.engines.results.PlanGenerationResult':
-        '''This function converts a UP problem to a constraint database and uses Spiderplan to resolve any open flaws.'''
+        '''This function converts a UP problem to a constraint database and uses SpiderPlan to resolve any open flaws.'''
         if not self.supports(problem.kind):
-            raise UPUnsupportedProblemTypeError('Spiderplan cannot solve this kind of problem!')
+            print('SpiderPlan cannot solve this kind of problem!')
+            # raise UPUnsupportedProblemTypeError('Spiderplan cannot solve this kind of problem!')
+
         if timeout is not None:
-            warnings.warn('Spiderplan does not support timeout.', UserWarning)
+            warnings.warn('SpiderPlan does not support timeout.', UserWarning)
         if output_stream is not None:
-            warnings.warn('Spiderplan does not support output stream.', UserWarning)
+            warnings.warn('SpiderPlan does not support output stream.', UserWarning)
             
         cdb = self._convert(problem)
         solution_cdb = self._solve(cdb)
