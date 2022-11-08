@@ -1,9 +1,11 @@
 import unified_planning.model.problem
+from aiddl_core.util.logger import Logger
+from unified_planning.model import InstantaneousAction, StartTiming, TimepointKind, Timing, TimeInterval
 from unified_planning.test.examples import get_example_problems
 from unified_planning.model.operators import OperatorKind
 from unified_planning.model.problem import Problem
 
-from aiddl_core.representation import Sym, Num, Real
+from aiddl_core.representation import Sym, Num, Real, Substitution
 from aiddl_core.representation import Boolean
 from aiddl_core.representation import Tuple
 from aiddl_core.representation import List
@@ -113,10 +115,11 @@ class UpCdbConverter:
         for f in problem.fluents:
             name = Sym(str(f.name))
             r_type = self._convert_type(f.type, t_look_up)
-            signature = [self._convert_type(s.type) for s in f.signature]
+            signature = [self._convert_type(s.type, t_look_up) for s in f.signature]
             if len(signature) == 0:
                 signatures.append(KeyVal(name, r_type))
             else:
+                print(f)
                 signatures.append(KeyVal(Tuple([name] + signature), r_type))
 
         return Set([
@@ -250,7 +253,7 @@ class UpCdbConverter:
             
         return Set(cdb)
 
-    def _convert_effect(self, e, op_id, effect_id):
+    def _convert_effect(self, e, op_id, effect_id, durative=False):
         statement = []
         temporal = []
         interval = Tuple([Sym("E%d" % effect_id), Var('ID')])
@@ -261,8 +264,11 @@ class UpCdbConverter:
 
         d = Tuple([Sym("duration"), interval, Tuple([Int(1), Inf.pos()])])
         m = Tuple([Sym("meets"), op_id, interval])
+
         statement.append(s)
-        temporal.append(m)
+        if not durative:
+            temporal.append(m)
+            m = Tuple([Sym("meets"), op_id, interval])
         temporal.append(d)
         return Set([
             KeyVal(Sym("effects"), List(statement)),
@@ -299,7 +305,12 @@ class UpCdbConverter:
         spider_ops = []
         signatures = []
         for o in ops:
-            spider_op = self._convert_operator(o, t_look_up)
+            if isinstance(o, InstantaneousAction):
+                spider_op = self._convert_instantaneous_action(o, t_look_up)
+            else:
+                spider_op = self._convert_durative_action(o, t_look_up)
+
+            print("SPIDER:", Logger.pretty_print(spider_op, 0))
 
             name = spider_op[Sym("name")]
             signature = spider_op[Sym("signature")]
@@ -307,7 +318,7 @@ class UpCdbConverter:
             if len(signature) == 0:
                 signatures.append(KeyVal(name, Sym("t_bool")))
             else:
-                sig = [name]
+                sig = [name[0]]
                 for p in signature:
                     sig.append(p.value)
                 signatures.append(KeyVal(Tuple(sig), Sym("t_bool")))
@@ -317,8 +328,104 @@ class UpCdbConverter:
             KeyVal(Sym("operator"), Set(spider_ops)),
             KeyVal(Sym("signature"), Set(signatures)),
         ])
+
+    def _convert_durative_action(self, a, t_look_up):
+        print("-------------------------------------")
+        base_name = Sym(a.name)
+        id_var = Var('ID')
+        op_id = Tuple([base_name, id_var])
+        args = [base_name]
+        sig = []
+        for p in a.parameters:
+            x, t = self._convert_parameter(p, t_look_up)
+            args.append(x)
+            sig.append(KeyVal(x, t))
+
+        if len(args) == 1:
+            name = args[0]
+        else:
+            name = Tuple(args)
+        signature = List(sig)
+
+        preconditions = []
+        effects = []
+        temporal = [Tuple([Sym("duration"), op_id, Tuple([Int(1), Inf.pos()])])]
+        csp = []
+        for i, cs in a.conditions.items():
+            ac = None
+            ti1 = i.lower
+            ti2 = i.upper
+
+            if ti1.timepoint.kind == TimepointKind.START and ti2.timepoint.kind == TimepointKind.START:
+                delay = ti1.delay
+                ac = Tuple(Sym("overlaps"), Var("I"), op_id, Tuple(Int(delay), Inf.pos()))
+            elif ti1.timepoint.kind == TimepointKind.START and ti2.timepoint.kind == TimepointKind.END:
+                ac = Tuple(Sym("contains"), Var("I"), op_id, Tuple(Int(1), Inf.pos()), Tuple(Int(1), Inf.pos()))
+
+            for c in cs:
+                self.next_id += 1
+                cond_i = Tuple([Sym("P%d" % self.next_id), Var("ID")])
+                sub = Substitution()
+                sub.add(Var("I"), cond_i)
+                ac_sub = ac.substitute(sub)
+                self.next_id -= 1
+                cond_aiddl = self._convert_condition(c, is_goal=False, op_id=None)
+                if cond_aiddl.contains_key(Sym('preconditions')):
+                    for p in cond_aiddl[Sym('preconditions')]:
+                        preconditions.append(p)
+                if cond_aiddl.contains_key(Sym('temporal')):
+                    for p in cond_aiddl[Sym('temporal')]:
+                        temporal.append(p)
+                if cond_aiddl.contains_key(Sym('csp')):
+                    for p in cond_aiddl[Sym('csp')]:
+                        csp.append(p)
+                print("COND:", cond_aiddl)
+                print("TEMP:", ac_sub)
+
+                temporal.append(ac_sub)
+
+        for i, es in a.effects.items():
+            ac = None
+            delay = i.delay
+            if i.timepoint.kind == TimepointKind.START:
+                ac = Tuple(Sym("started-by"), Var("I"), op_id, Tuple(Int(delay), Int(delay)))
+            elif i.timepoint.kind == TimepointKind.END:
+                ac = Tuple(Sym("before"), op_id, Var("I"), Tuple(Int(delay), Int(delay)))
+
+            for e in es:
+                self.next_id += 1
+                effect_id = Tuple([Sym("E%d" % self.next_id), Var("ID")])
+                sub = Substitution()
+                sub.add(Var("I"), effect_id)
+                ac_sub = ac.substitute(sub)
+                temporal.append(ac_sub)
+                constraints = self._convert_effect(e, op_id, self.next_id, durative=True)
+                print("Effect extracted:", constraints)
+                if constraints.contains_key(Sym('effects')):
+                    for p in constraints[Sym('effects')]:
+                        effects.append(p)
+                if constraints.contains_key(Sym('temporal')):
+                    for p in constraints[Sym('temporal')]:
+                        temporal.append(p)
+
+        constraint_list = []
+        constraint_list.append(KeyVal(Sym('temporal'), List(temporal)))
+        if len(csp) > 0:
+            constraint_list.append(KeyVal(Sym('csp'), List(csp)))
+
+        return Tuple([
+            KeyVal(Sym('name'), name),
+            KeyVal(Sym('signature'), signature),
+            KeyVal(Sym('id'), id_var),
+            KeyVal(Sym('interval'), op_id),
+            KeyVal(Sym('preconditions'), List(preconditions)),
+            KeyVal(Sym('effects'), List(effects)),
+            KeyVal(Sym('constraints'), List(constraint_list))
+        ])
+
+
     
-    def _convert_operator(self, o, t_look_up):
+    def _convert_instantaneous_action(self, o, t_look_up):
         base_name = Sym(o.name)
         id_var = Var('ID')
         op_id = Tuple([base_name, id_var])
@@ -408,6 +515,8 @@ class UpCdbConverter:
             self.next_id += 1
             type_name = Sym(f't_range-{self.next_id}')
             t_look_up[t] = KeyVal(type_name, domain)
+        else: # UserType
+            type_name = Sym(t.name)
 
         return type_name
 
@@ -439,6 +548,6 @@ class UpCdbConverter:
     def _convert_user_types(self, problem, type_look_up):
         for utype in problem.user_types:
             name = Sym(utype.name)
-            domain = [self._convert_object(o) for o in problem.objects(utype)]
-            type_look_up[utype] = (name, domain)
+            domain = List([self._convert_object(o) for o in problem.objects(utype)])
+            type_look_up[utype] = KeyVal(name, domain)
             
