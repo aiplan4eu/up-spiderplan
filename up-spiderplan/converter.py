@@ -11,9 +11,9 @@ from aiddl_core.representation import Set
 from aiddl_core.representation import Int
 from aiddl_core.representation import KeyVal
 from aiddl_core.representation import Var
-from aiddl_core.representation import Infinity
+from aiddl_core.representation import Inf
 
-from aiddl_core.tools.logger import Logger
+from aiddl_core.util.logger import Logger
 
 OpMap = {}
 OpMap[OperatorKind.AND] = Sym("org.aiddl.eval.logic.and")
@@ -35,17 +35,17 @@ OpMap[OperatorKind.LT] = Sym("org.aiddl.eval.numerical.less-than")
 def merge_cdb(a, b):
     result = {}
     for kvp in a:
-        k_a = kvp.get_key()
+        k_a = kvp.key
         if b.contains_key(k_a):
-            result[k_a] = kvp.get_value().add_all(b[k_a])
+            result[k_a] = kvp.value.add_all(b[k_a])
         else:
-            result[k_a] = kvp.get_value()
+            result[k_a] = kvp.value
 
     for kvp in b:
         print(kvp)
-        k_b = kvp.get_key()
+        k_b = kvp.key
         if k_b not in result.keys():
-            result[k_b] = kvp.get_value()
+            result[k_b] = kvp.value
 
     r = []
     for k in result.keys():
@@ -184,7 +184,7 @@ class UpCdbConverter:
             g_val = Boolean(not c.is_not())
             
             s = Tuple([i, KeyVal(g_var, g_val)])
-            d = Tuple([Sym("duration"), i, Tuple([Int(1), Infinity.pos()])])
+            d = Tuple([Sym("duration"), i, Tuple([Int(1), Inf.pos()])])
             if is_goal:
                 goals.append(s)
             else:
@@ -206,7 +206,7 @@ class UpCdbConverter:
                 val = fluents[fluent]
                 if var != val:
                     s = Tuple([i, KeyVal(var, val)])
-                    d = Tuple([Sym("duration"), i, Tuple([Int(1), Infinity.pos()])])
+                    d = Tuple([Sym("duration"), i, Tuple([Int(1), Inf.pos()])])
                     if is_goal:
                         goals.append(s)
                     else:
@@ -259,7 +259,7 @@ class UpCdbConverter:
                        self._convert_fnode(e.fluent),
                        self._convert_fnode(e.value))])
 
-        d = Tuple([Sym("duration"), interval, Tuple([Int(1), Infinity.pos()])])
+        d = Tuple([Sym("duration"), interval, Tuple([Int(1), Inf.pos()])])
         m = Tuple([Sym("meets"), op_id, interval])
         statement.append(s)
         temporal.append(m)
@@ -280,7 +280,7 @@ class UpCdbConverter:
                            self._convert_fnode(init_vals[e]))])
 
             r = Tuple([Sym("release"), interval, Tuple([Int(0), Int(0)])])
-            d = Tuple([Sym("duration"), interval, Tuple([Int(1), Infinity.pos()])])
+            d = Tuple([Sym("duration"), interval, Tuple([Int(1), Inf.pos()])])
             statements.append(s)
             temporal.append(r)
             temporal.append(d)
@@ -309,7 +309,7 @@ class UpCdbConverter:
             else:
                 sig = [name]
                 for p in signature:
-                    sig.append(p.get_value())
+                    sig.append(p.value)
                 signatures.append(KeyVal(Tuple(sig), Sym("t_bool")))
 
             spider_ops.append(spider_op)
@@ -331,7 +331,7 @@ class UpCdbConverter:
 
         preconditions = []
         effects = []
-        temporal = [Tuple([Sym("duration"), op_id, Tuple([Int(1), Infinity.pos()])])]
+        temporal = [Tuple([Sym("duration"), op_id, Tuple([Int(1), Inf.pos()])])]
         csp = []
         for p in o.preconditions:
             constraints = self._convert_condition(p, is_goal=False, op_id=op_id)
@@ -391,14 +391,14 @@ class UpCdbConverter:
             else:
                 range_type = Sym("real")
             if t.lower_bound is None:
-                lb = Infinity.neg()
+                lb = Inf.neg()
             else:
                 if t.is_int_type():
                     lb = Int(t.lower_bound)
                 else:
                     lb = Real(t.lower_bound)
             if t.upper_bound is None:
-                ub = Infinity.pos()
+                ub = Inf.pos()
             else:
                 if t.is_int_type():
                     ub = Int(t.upper_bound)
@@ -421,11 +421,11 @@ class UpCdbConverter:
                 else:
                     range_type = Sym("real")
                 if p.type.lower_bound is None:
-                    lb = Infinity.neg()
+                    lb = Inf.neg()
                 else:
                     lb = Num(p.type.lower_bound)
                 if p.type.upper_bound is None:
-                    ub = Infinity.pos()
+                    ub = Inf.pos()
                 else:
                     ub = Num(p.type.lower_bound)
                 domain = Tuple([Sym("range"), Tuple([lb, ub]), List([KeyVal(Sym("type"), range_type)])])

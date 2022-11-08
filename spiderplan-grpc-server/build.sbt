@@ -16,10 +16,9 @@ lazy val root = project
 
     libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.9",
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.9" % "test",
-    libraryDependencies += "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
-    libraryDependencies += "org.aiddl" % "aiddl-common-scala_3" % "2.1.0",
-    libraryDependencies += "org.aiddl" % "aiddl-core-scala_3" % "2.1.0",
-    libraryDependencies += "org.aiddl" % "aiddl-util-scala_3" % "2.1.0",
-    libraryDependencies += "org.aiddl" % "aiddl-external-grpc-scala_3" % "0.1.0",
-    libraryDependencies += "org.spiderplan" % "spiderplan_3" % "0.3.0"
+
+    libraryDependencies += "org.aiddl" % "aiddl-common-scala" % "1.0.0-SNAPSHOT",
+    libraryDependencies += "org.aiddl" % "aiddl-core-scala" % "1.0.0-SNAPSHOT",
+    libraryDependencies += "org.aiddl" % "aiddl-external-grpc-scala" % "0.1.0-SNAPSHOT",
+    libraryDependencies += "org.spiderplan" % "spiderplan" % "0.3.0-SNAPSHOT"
   )

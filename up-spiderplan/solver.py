@@ -18,13 +18,14 @@ from typing import IO, Callable, List, Dict, Optional, Set, Tuple
 import warnings
 import unified_planning as up
 import unified_planning.engines
+from aiddl_core.container import Container
 from unified_planning.exceptions import UPUnsupportedProblemTypeError
 from unified_planning.engines import PlanGenerationResultStatus, Credits
 from unified_planning.model import FNode, ProblemKind, Type as UPType
 
 from aiddl_core.representation import Term, Sym
-from aiddl_core.tools.logger import Logger
-from aiddl_external_grpc import GrpcFunction
+from aiddl_core.util.logger import Logger
+from aiddl_external_grpc_python.container import GrpcFunction
 
 from converter import UpCdbConverter
 
@@ -76,7 +77,8 @@ class EngineImpl(unified_planning.engines.Engine):
 
     def _solve(self, cdb: 'aiddl_core.representation.Set') -> Term:
         # Call Spiderplan and get resulting CDB or NIL if no solution exists.
-        spiderplan_proxy = GrpcFunction("localhost", 8011, Sym("org.spiderplan.unified-planning.basic-graph-search"))
+        container = Container()
+        spiderplan_proxy = GrpcFunction("localhost", 8011, Sym("org.spiderplan.unified-planning.basic-graph-search"), container)
 
         print("SpiderPlan Problem:")
         print(Logger.pretty_print(cdb, 0))

@@ -6,7 +6,8 @@ A constraint-based planning engine for unified planning.
 ### 0.1.0
 
 - UP problems can be converted to constraint databases
-  - Assume no real-valued fluents
+  - Classical plannning
+  - Temporal planning
 - Call spiderplan to produce a solution/failure
 - Answer translated to a UP result
 
