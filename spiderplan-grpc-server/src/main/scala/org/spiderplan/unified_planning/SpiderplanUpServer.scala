@@ -4,18 +4,18 @@ import org.aiddl.common.scala.execution.Actor.Status
 import org.aiddl.core.scala.container.Container
 import org.aiddl.core.scala.representation.{KeyVal, ListTerm, Num, Sym, Term}
 import org.aiddl.external.grpc.scala.container.ContainerServer
-import org.aiddl.external.grpc.scala.function_call.AiddlGrpcServer
 import org.spiderplan.solver.SpiderPlanFactory
 
 import org.aiddl.core.scala.function.Function
 import scala.concurrent.ExecutionContext
+import java.util.logging.Level
 
 @main def runServer = {
   val c = new Container()
 
   object spiderPlan extends Function {
     def apply(cdb: Term): Term = {
-      val spiderPlan = SpiderPlanFactory.fullGraphSearch(cdb.asCol, 2)
+      val spiderPlan = SpiderPlanFactory.fullGraphSearch(cdb.asCol, Level.FINE)
 
       val input = c.eval(cdb).asCol
       spiderPlan.solve(input) match {

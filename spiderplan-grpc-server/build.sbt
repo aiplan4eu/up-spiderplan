@@ -11,6 +11,9 @@ lazy val root = project
     scalaVersion := scala3Version,
 
     resolvers += Resolver.mavenLocal,
+    resolvers += Resolver.jcenterRepo,
+    resolvers += "jitpack Repo" at "https://jitpack.io/",
+    resolvers += "rosjava Repo" at "https://github.com/rosjava/rosjava_mvn_repo/raw/master/",
 
     parallelExecution := false,
 
@@ -19,5 +22,7 @@ lazy val root = project
     libraryDependencies += "org.aiddl" % "aiddl-common-scala" % "1.0.0-SNAPSHOT",
     libraryDependencies += "org.aiddl" % "aiddl-core-scala" % "1.0.0-SNAPSHOT",
     libraryDependencies += "org.aiddl" % "aiddl-external-grpc-scala" % "0.1.0-SNAPSHOT",
-    libraryDependencies += "org.spiderplan" % "spiderplan" % "0.3.0-SNAPSHOT"
+    libraryDependencies += "org.aiddl" % "aiddl-external-coordination_oru" % "0.1.0-SNAPSHOT",
+    libraryDependencies += "org.spiderplan" % "spiderplan" % "0.3.0-SNAPSHOT",
+    libraryDependencies += "org.spiderplan" % "spiderplan_coorination_oru" % "0.1.0-SNAPSHOT"
   )

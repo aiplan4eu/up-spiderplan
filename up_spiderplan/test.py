@@ -11,7 +11,9 @@ basic_wc = problems["basic_with_costs"].problem
 counter_2_50 = problems["counter_to_50"].problem
 match_cellar = problems["matchcellar"].problem
 
-selected = match_cellar
+robot_no_neg = problems["robot_no_negative_preconditions"].problem
+
+selected = robot_no_neg
 
 print(selected)
 

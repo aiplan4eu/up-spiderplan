@@ -318,6 +318,7 @@ class UpCdbConverter:
             if len(signature) == 0:
                 signatures.append(KeyVal(name, Sym("t_bool")))
             else:
+                print(signature)
                 sig = [name[0]]
                 for p in signature:
                     sig.append(p.value)
@@ -434,7 +435,7 @@ class UpCdbConverter:
         for p in o.parameters:
             x, t = self._convert_parameter(p, t_look_up)
             args.append(x)
-            sig.append(t)
+            sig.append(KeyVal(x, t))
 
         preconditions = []
         effects = []

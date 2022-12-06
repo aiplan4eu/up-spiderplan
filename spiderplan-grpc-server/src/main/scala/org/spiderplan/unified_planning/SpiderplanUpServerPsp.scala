@@ -4,7 +4,7 @@ import org.aiddl.common.scala.execution.Actor.Status
 import org.aiddl.core.scala.container.Container
 import org.aiddl.core.scala.function.Function
 import org.aiddl.core.scala.representation.*
-import org.aiddl.external.grpc.scala.function_call.AiddlGrpcServer
+import org.aiddl.external.grpc.scala.container.ContainerServer
 import org.spiderplan.solver._
 import org.aiddl.common.scala.planning.state_variable.heuristic.CausalGraphHeuristic
 import org.aiddl.core.scala.function
@@ -17,20 +17,19 @@ import org.spiderplan.solver.conditional.ConditionalConstraintResolver
 import org.spiderplan.solver.csp.{CspPreprocessor, CspResolver}
 import org.spiderplan.solver.domain.DomainConstraintSolver
 import org.spiderplan.solver.temporal.TemporalConstraintSolver
+import java.util.logging.Level
 
 import scala.concurrent.ExecutionContext
 
 @main def runServerPsp = {
   val c = new Container()
-  val verbosityLevel = 2
-
   object spiderPlan extends Function {
     def apply(cdb: Term): Term = {
       val subSolver: SpiderPlanTreeSearch = new SpiderPlanTreeSearch {
         override val preprocessors: Vector[function.Function] = Vector.empty
         override val propagators: Vector[Propagator] = Vector(
           new DomainConstraintSolver {
-            setVerbose("Domain", verbosityLevel)
+            logSetName("Domain")
           },
           new TemporalConstraintSolver //{ setVerbose(verbosityLevel) }
         )
@@ -39,32 +38,32 @@ import scala.concurrent.ExecutionContext
       }
 
       val spiderPlan = new SpiderPlanGraphSearch {
-        setVerbose("Spider", verbosityLevel)
+        logSetName("Spider")
         //this.includePathLength = true
         override val preprocessors: Vector[function.Function] = Vector(
           new TemporalConstraintSolver,
           new CspPreprocessor {
-            setVerbose("CspPreprocessor", verbosityLevel)
+            logSetName("CspPreprocessor")
           },
           new OperatorGrounderFull
         )
 
         override val propagators: Vector[Propagator] = Vector(
           new DomainConstraintSolver {
-            setVerbose("Domain", verbosityLevel)
+            logSetName("Domain")
           },
           new TemporalConstraintSolver //{ setVerbose(verbosityLevel) }
         )
 
         override val solvers: Vector[FlawResolver] = Vector(
           new CspResolver {
-            setVerbose("CSP", verbosityLevel)
+            logSetName("CSP")
           },
           new ForwardOpenGoalResolver(heuristic = None) {
-            setVerbose("GoalResolver", verbosityLevel)
+            logSetName("GoalResolver")
           },
           new ConditionalConstraintResolver(subSolver) {
-            setVerbose("Conditional", verbosityLevel)
+            logSetName("Conditional")
           }
         )
 
@@ -73,6 +72,8 @@ import scala.concurrent.ExecutionContext
           //new ForwardHeuristicWrapper(new CausalGraphHeuristic)
         )
       }
+
+      spiderPlan.logConfigRecursive(level=Level.FINE)
 
       val input = c.eval(cdb).asCol
       spiderPlan.solve(input) match {
@@ -84,7 +85,7 @@ import scala.concurrent.ExecutionContext
 
   c.addFunction(Sym("org.spiderplan.unified-planning.basic-graph-search"), spiderPlan)
 
-  val server = new AiddlGrpcServer(ExecutionContext.global, 8011, c)
+  val server = new ContainerServer(ExecutionContext.global, 8011, c)
 
   server.start()
   server.blockUntilShutdown()
