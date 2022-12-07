@@ -43,7 +43,7 @@ class TestClassical(unittest.TestCase):
 
     def test_robot_no_negative_preconditions(self):
         problem = self.problems["robot_no_negative_preconditions"].problem
-
+        print(problem)
         final_report = self.planner.solve(problem)
         #a = problem.action("a")
 
@@ -57,5 +57,31 @@ class TestClassical(unittest.TestCase):
         # self.assertEqual(plan.actions[0].action, a)
         self.assertEqual(len(plan.actions[0].actual_parameters), 2)
         
-    
-    
+        
+    def test_basic_2(self):
+        from planning_tests.classical_planning.problems.problem_basic import UPBasic
+        problem = UPBasic(1).get_problem()
+        result = self.planner.solve(problem)
+        self.assertNotEqual(result.status, PlanGenerationResultStatus.INTERNAL_ERROR)
+        # result status must reflect that there is no plan
+        self.assertEqual(result.status, PlanGenerationResultStatus.SOLVED_SATISFICING)
+
+    def test_basic_unsolvable(self):
+        from planning_tests.classical_planning.problems.problem_basic_unsolvable import UPBasicUnsolvable
+        problem = UPBasicUnsolvable(1).get_problem()
+        result = self.planner.solve(problem)
+        self.assertNotEqual(result.status, PlanGenerationResultStatus.INTERNAL_ERROR)
+        # result status must reflect that there is no plan
+        self.assertEqual(result.status, PlanGenerationResultStatus.UNSOLVABLE_PROVEN)
+
+    def test_depot_1(self):
+        from planning_tests.classical_planning.pddl_problems.depots.depots import depots_pfile1
+        problem = depots_pfile1(1).get_problem()
+
+        print(problem)
+
+        result = self.planner.solve(problem)
+        self.assertNotEqual(result.status, PlanGenerationResultStatus.INTERNAL_ERROR)
+        # result status must reflect that there is no plan
+        self.assertEqual(result.status, PlanGenerationResultStatus.SOLVED_SATISFICING)
+

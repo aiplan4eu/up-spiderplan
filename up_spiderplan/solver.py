@@ -71,7 +71,7 @@ class EngineImpl(unified_planning.engines.Engine):
   
         actions: List[up.plans.ActionInstance] = []
         if solution_cdb == Sym("NIL"):
-            return up.plans.FinalReport(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
+            return up.engines.PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
 
         plan = self._extract_plan(solution_cdb)
         return up.engines.PlanGenerationResult(PlanGenerationResultStatus.SOLVED_SATISFICING, plan, self.name)
