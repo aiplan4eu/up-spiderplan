@@ -18,7 +18,7 @@ from typing import IO, Callable, List, Dict, Optional, Set, Tuple
 import warnings
 import unified_planning as up
 import unified_planning.engines
-from aiddl_core.container import Container
+from aiddl_core.container import Container, Entry
 from unified_planning.exceptions import UPUnsupportedProblemTypeError
 from unified_planning.engines import PlanGenerationResultStatus, Credits
 from unified_planning.model import FNode, ProblemKind, Type as UPType
@@ -68,8 +68,7 @@ class EngineImpl(unified_planning.engines.Engine):
         self._problem = problem
         cdb = self._convert(problem)
         solution_cdb = self._solve(cdb)
-  
-        actions: List[up.plans.ActionInstance] = []
+
         if solution_cdb == Sym("NIL"):
             return up.engines.PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
 
@@ -85,6 +84,12 @@ class EngineImpl(unified_planning.engines.Engine):
         # Call Spiderplan and get resulting CDB or NIL if no solution exists.
         container = Container()
         spiderplan_proxy = GrpcFunction("localhost", 8011, Sym("org.spiderplan.unified-planning.basic-graph-search"), container)
+
+        mod_name = Sym("aiplan4eu.up-spiderplan.up-input")
+        container.add_module(mod_name)
+        e = Entry(Sym("org.aiddl.type.term"), Sym("problem"), cdb)
+        container.set_entry(e, mod_name)
+        container.export(mod_name, "converted-from-up.aiddl")
 
         print("SpiderPlan Problem:")
         print(Logger.pretty_print(cdb, 0))
@@ -109,13 +114,16 @@ class EngineImpl(unified_planning.engines.Engine):
         for s in cdb[Sym("statement")]:
             variable = s[1].key
             if variable in op_map.keys():
-                earliest_start_time = cdb[Sym("propagated-value")][AiddlTuple(Sym("ST"), s[0])]
+                earliest_start_time = cdb[Sym("propagated-value")][AiddlTuple(Sym("ST"), s[0])][0]
                 plan_stmts.append((earliest_start_time, s))
 
-        plan_stmts.sort()
+        plan_stmts = sorted(plan_stmts, key=lambda x: x[0])
 
+        actions: List[up.plans.ActionInstance] = []
+        print("Plan statements:")
         for _, s in plan_stmts:
-            actions: List[up.plans.ActionInstance] = []
+            print(s)
+
             aiddl_action = s[1].key
             action_params = []
             if isinstance(aiddl_action, AiddlTuple):

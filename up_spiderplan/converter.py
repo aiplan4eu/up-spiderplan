@@ -158,7 +158,7 @@ class UpCdbConverter:
                 
         return term
 
-    def _convert_condition(self, c, is_goal=True, op_id=None):
+    def _convert_condition(self, c, is_goal=True, op_id=None, effect_vars=[]):
         # UP conditions may correspond to various constraint types
         # Fluent -> goal/precondition + temporal
         # (not Fluent) -> statement with false value + temporal
@@ -193,8 +193,11 @@ class UpCdbConverter:
             else:
                 preconditions.append(s)
             temporal.append(d)
-            if op_id is not None:
+            if op_id is not None and g_var in effect_vars:
                 temporal.append(Tuple([Sym("meets"), i, op_id]))
+            elif op_id is not None:
+                temporal.append(Tuple(Sym("contains"), i, op_id, Tuple(Int(1), Inf.pos()),Tuple(Int(1), Inf.pos())))
+
         else:
             fluents = {}
             constraint_term = self._convert_constraint(c, fluents)
@@ -215,8 +218,10 @@ class UpCdbConverter:
                     else:
                         preconditions.append(s)
                     temporal.append(d)
-                    if op_id is not None:
+                    if op_id is not None and var in effect_vars:
                         temporal.append(Tuple([Sym("meets"), i, op_id]))
+                    elif op_id is not None:
+                        temporal.append(Tuple(Sym("contains"), i, op_id, Tuple(Int(1), Inf.pos()),Tuple(Int(1), Inf.pos())))
                 scope.append(fluents[fluent])
 
             vars = List(scope)
@@ -439,10 +444,27 @@ class UpCdbConverter:
 
         preconditions = []
         effects = []
+
         temporal = [Tuple([Sym("duration"), op_id, Tuple([Int(1), Inf.pos()])])]
+
         csp = []
+
+        effect_vars = []
+        effect_id = 0
+        for e in o.effects:
+            effect_id += 1
+            constraints = self._convert_effect(e, op_id, effect_id)
+            print("Effect extracted:", constraints)
+            if constraints.contains_key(Sym('effects')):
+                for p in constraints[Sym('effects')]:
+                    effect_vars.append(p[1].key)
+                    effects.append(p)
+            if constraints.contains_key(Sym('temporal')):
+                for p in constraints[Sym('temporal')]:
+                    temporal.append(p)
+
         for p in o.preconditions:
-            constraints = self._convert_condition(p, is_goal=False, op_id=op_id)
+            constraints = self._convert_condition(p, is_goal=False, op_id=op_id, effect_vars=effect_vars)
             if constraints.contains_key(Sym('preconditions')):
                 for p in constraints[Sym('preconditions')]:
                     preconditions.append(p)
@@ -453,17 +475,7 @@ class UpCdbConverter:
                 for p in constraints[Sym('csp')]:
                     csp.append(p)
 
-        effect_id = 0
-        for e in o.effects:
-            effect_id += 1
-            constraints = self._convert_effect(e, op_id, effect_id)
-            print("Effect extracted:", constraints)
-            if constraints.contains_key(Sym('effects')):
-                for p in constraints[Sym('effects')]:
-                    effects.append(p)
-            if constraints.contains_key(Sym('temporal')):
-                for p in constraints[Sym('temporal')]:
-                    temporal.append(p)
+
 
         if len(args) == 1:
             name = args[0]
