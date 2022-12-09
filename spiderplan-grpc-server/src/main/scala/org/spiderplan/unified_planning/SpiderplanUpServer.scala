@@ -18,10 +18,12 @@ import java.util.logging.Level
       val spiderPlan = SpiderPlanFactory.fullGraphSearch(cdb.asCol, Level.FINE)
 
       val input = c.eval(cdb).asCol
-      spiderPlan.solve(input) match {
+      val r = spiderPlan.solve(input) match {
         case Some(solution) => solution
         case None => Sym("NIL")
       }
+      spiderPlan.searchGraph2File("search.dot")
+      r
     }
   }
 

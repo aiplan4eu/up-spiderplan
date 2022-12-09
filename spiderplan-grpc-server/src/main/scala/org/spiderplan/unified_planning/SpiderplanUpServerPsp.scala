@@ -6,7 +6,7 @@ import org.aiddl.core.scala.function.Function
 import org.aiddl.core.scala.representation.*
 import org.aiddl.external.grpc.scala.container.ContainerServer
 import org.spiderplan.solver._
-import org.aiddl.common.scala.planning.state_variable.heuristic.CausalGraphHeuristic
+import org.aiddl.common.scala.planning.state_variable.heuristic.{CausalGraphHeuristic, FastForwardHeuristic}
 import org.aiddl.core.scala.function
 import org.aiddl.core.scala.representation.*
 import org.spiderplan.solver.Solver.{FlawResolver, Propagator}
@@ -37,9 +37,11 @@ import scala.concurrent.ExecutionContext
         )
       }
 
-      val spiderPlan = new SpiderPlanGraphSearch {
+      //val heuristics = Vector((new ForwardHeuristicWrapper(new FastForwardHeuristic), Num(1)))
+      val heuristics: Vector[(Heuristic, Num)] = Vector((new HAddReuse, Num(1)))
+
+      val spiderPlan = new SpiderPlanGraphSearch(heuristics) {
         logSetName("Spider")
-        //this.includePathLength = true
         override val preprocessors: Vector[function.Function] = Vector(
           new TemporalConstraintSolver,
           new CspPreprocessor {
@@ -65,11 +67,6 @@ import scala.concurrent.ExecutionContext
           new ConditionalConstraintResolver(subSolver) {
             logSetName("Conditional")
           }
-        )
-
-        override val heuristics: Vector[Heuristic] = Vector(
-          new HAddReuse //{ setVerbose(verbosityLevel) }
-          //new ForwardHeuristicWrapper(new CausalGraphHeuristic)
         )
       }
 
