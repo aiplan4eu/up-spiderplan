@@ -1,12 +1,13 @@
 package org.spiderplan.unified_planning
 
 import org.aiddl.common.scala.execution.Actor.Status
+import org.aiddl.core.scala.util.StopWatch
 import org.aiddl.core.scala.container.Container
 import org.aiddl.core.scala.representation.{KeyVal, ListTerm, Num, Sym, Term}
 import org.aiddl.external.grpc.scala.container.ContainerServer
 import org.spiderplan.solver.SpiderPlanFactory
-
 import org.aiddl.core.scala.function.Function
+
 import scala.concurrent.ExecutionContext
 import java.util.logging.Level
 
@@ -15,14 +16,22 @@ import java.util.logging.Level
 
   object spiderPlan extends Function {
     def apply(cdb: Term): Term = {
-      val spiderPlan = SpiderPlanFactory.fullGraphSearch(cdb.asCol, Level.FINE)
+      val spiderPlan = SpiderPlanFactory.fullGraphSearch(cdb.asCol, Level.WARNING)
+
+      StopWatch.recordedTimes.clear()
 
       val input = c.eval(cdb).asCol
+      StopWatch.start("[SpiderPlan] Main")
       val r = spiderPlan.solve(input) match {
         case Some(solution) => solution
         case None => Sym("NIL")
       }
+      StopWatch.stop("[SpiderPlan] Main")
       spiderPlan.searchGraph2File("search.dot")
+
+      println(StopWatch.summary)
+
+
       r
     }
   }
