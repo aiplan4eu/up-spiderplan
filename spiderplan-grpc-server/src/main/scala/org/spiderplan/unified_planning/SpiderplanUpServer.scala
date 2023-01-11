@@ -21,6 +21,8 @@ import org.spiderplan.solver.conditional.ConditionalConstraintResolver
 import org.spiderplan.solver.csp.{CspPreprocessor, CspResolver}
 import org.spiderplan.solver.domain.DomainConstraintSolver
 import org.spiderplan.solver.temporal.TemporalConstraintSolver
+import org.spiderplan.solver.SpiderPlan.Type.*
+import org.aiddl.common.scala.planning.PlanningTerm.*
 
 import scala.concurrent.ExecutionContext
 import java.util.logging.Level
@@ -30,7 +32,8 @@ object Main extends App {
     def apply(cdb: Term): Term = {
       val spiderPlan = new SpiderPlanGraphSearch(
         Vector(
-          (new ForwardHeuristicWrapper(new FastForwardHeuristic), Num(1))
+          (new ForwardHeuristicWrapper(new FastForwardHeuristic), Num(1.0))
+          //(new ForwardHeuristicWrapper(new CausalGraphHeuristic), Num(1))
           //(new ForwardHeuristicWrapper(new FastForwardHeuristic), Num(0.5))
         )) {
         self: SpiderPlanGraphSearch =>
@@ -56,7 +59,7 @@ object Main extends App {
           },
           new ForwardOpenGoalResolver(heuristic = None) {
             logSetName("GoalResolver")
-            setSeenList(self.seenList)
+            seenList = Some(self.seenList)
           },
         )
       }
@@ -67,6 +70,16 @@ object Main extends App {
 
       val c = new Container()
       val input = c.eval(cdb).asCol
+/*
+      val statements = SetTerm(input(Statement).asCol.filter( s =>
+        input(OpenGoal).asCol.exists( g => g(1) unifiable s(1) )
+        || input(Operator).asCol.exists( o => o(Preconditions).asCol.exists( p => p(1) unifiable s(1) ) ) ).toSet)
+
+      println(s"A: ${input(Statement).asCol.length} B: ${statements.asCol.length}")
+
+      val acs = SetTerm(input(Temporal).asCol.filter(c => statements.exists(s => c(0) == s(0) || c(1) == s(0) )).toSet)
+      println(s"A: ${input(Temporal).asCol.length} B: ${acs.asCol.length}")
+      */
 
       StopWatch.start("[SpiderPlan] Main")
       val r = spiderPlan.solve(input) match {

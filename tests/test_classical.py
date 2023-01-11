@@ -96,16 +96,15 @@ class TestClassical(unittest.TestCase):
         # result status must reflect that there is no plan
         self.assertEqual(result.status, PlanGenerationResultStatus.SOLVED_SATISFICING)
 
-    # def test_depot_3(self):
-    #     from planning_tests.classical_planning.pddl_problems.depots.depots import depots_pfile3
-    #     problem = depots_pfile3(1).get_problem()
-    #
-    #     print(problem)
-    #
-    #     result = self.planner.solve(problem)
-    #     self.assertNotEqual(result.status, PlanGenerationResultStatus.INTERNAL_ERROR)
-    #     # result status must reflect that there is no plan
-    #     self.assertEqual(result.status, PlanGenerationResultStatus.SOLVED_SATISFICING)
+    def test_depot_3(self):
+        from planning_tests.classical_planning.pddl_problems.depots.depots import depots_pfile3
+        problem = depots_pfile3(1).get_problem()
+        print(problem)
+
+        result = self.planner.solve(problem)
+        self.assertNotEqual(result.status, PlanGenerationResultStatus.INTERNAL_ERROR)
+        # result status must reflect that there is no plan
+        self.assertEqual(result.status, PlanGenerationResultStatus.SOLVED_SATISFICING)
 
     def test_tpp_1(self):
         from planning_tests.classical_planning.pddl_problems.tpp.tpp import tpp_pfile1
