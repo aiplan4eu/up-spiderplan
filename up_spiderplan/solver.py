@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import subprocess
+import shutil
+import os
 
 from functools import partial
 from typing import IO, Callable, List, Dict, Optional, Set, Tuple
@@ -36,16 +39,43 @@ credits = Credits('spiderplan',
                   'Örebro University',
                   'Uwe Köckemann',
                   'spiderplan.org',
-                  'MIT LICENSE',
+                  'GPL3 LICENSE',
                   'Spiderplan is an extentable constraint-based hybrid planner.',
                   'Spiderplan is an extentable constraint-based hybrid planner.'
                 )
 
+SPIDER_dst = "./tmp/"
+SPIDER_PUBLIC = "up-spiderplan"
+SPIDER_TAG = "master"
+SPIDER_REPO = "https://github.com/aiplan4eu/up-spiderplan.git"
+
 class EngineImpl(unified_planning.engines.Engine):
     def __init__(self, **options):
         self._problem = None
+        self.install_grpc_server()
         if len(options) > 0:
             raise
+
+    def install_grpc_server(self):
+        subprocess.run(["git", "clone", "-b", SPIDER_TAG, SPIDER_REPO])
+        shutil.move(SPIDER_PUBLIC, SPIDER_dst)
+        curr_dir = os.getcwd()
+        os.chdir(SPIDER_dst  + "spiderplan_grpc_server")
+        os.system("docker-compose build")
+        os.chdir(curr_dir)
+
+    def start_grpc_server(self):
+        curr_dir = os.getcwd()
+        os.chdir(SPIDER_dst)
+        os.system("docker-compose up -d")
+        os.chdir(curr_dir)
+
+    def stop_grpc_server(self):
+        curr_dir = os.getcwd()
+        os.chdir(SPIDER_dst)
+        os.system("docker-compose down")
+        os.chdir(curr_dir) 
+
 
     @property
     def name(self) -> str:
