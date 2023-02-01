@@ -1,11 +1,13 @@
 import unified_planning.model.problem
 from aiddl_core.util.logger import Logger
 from unified_planning.model import InstantaneousAction, StartTiming, TimepointKind, Timing, TimeInterval
+from unified_planning.model.tamp import InstantaneousMotionAction, Waypoints, ConfigurationObject
+from unified_planning.shortcuts import ConfigurationType
 from unified_planning.test.examples import get_example_problems
 from unified_planning.model.operators import OperatorKind
 from unified_planning.model.problem import Problem
 
-from aiddl_core.representation import Sym, Num, Real, Substitution
+from aiddl_core.representation import Sym, Num, Real, Substitution, Str
 from aiddl_core.representation import Boolean
 from aiddl_core.representation import Tuple
 from aiddl_core.representation import List
@@ -14,6 +16,7 @@ from aiddl_core.representation import Int
 from aiddl_core.representation import KeyVal
 from aiddl_core.representation import Var
 from aiddl_core.representation import Inf
+from aiddl_core.parser.parser import parse_term
 
 from aiddl_core.util.logger import Logger
 
@@ -59,6 +62,7 @@ class UpCdbConverter:
 
     def __init__(self):
         self.next_id = 0
+        self.map_look_up = {}
 
     def __call__(self, problem):
         cdb = Set([])
@@ -67,7 +71,9 @@ class UpCdbConverter:
         cdb = merge_cdb(cdb, init)
         goal = self._convert_goal(problem.goals)
         cdb = merge_cdb(cdb, goal)
-        
+
+        cdb = merge_cdb(cdb, self._convert_motion_info(problem))
+
         type_look_up = {}
         self._convert_user_types(problem, type_look_up)
 
@@ -489,6 +495,30 @@ class UpCdbConverter:
         constraint_list.append(KeyVal(Sym('temporal'), List(temporal)))
         if len(csp) > 0:
             constraint_list.append(KeyVal(Sym('csp'), List(csp)))
+
+        if isinstance(o, InstantaneousMotionAction):
+            #motion:{
+            #    (path ?ID ?r ?l1 ?l2 map-1 ?path)
+            #}
+            motion_constraints = []
+            print("CONVERTING MOTION CONSTRAINTS")
+            for mc in o.motion_constraints:
+                if isinstance(mc, Waypoints):
+                    movable = self._convert_fnode(mc.movable)
+                    start = self._convert_fnode(mc.starting)
+                    wps = List([self._convert_fnode(wp) for wp in mc.waypoints])
+                    print(movable)
+
+                    map_name = self.map_look_up[mc.starting.type.occupancy_map]
+
+                    c = Tuple(Sym("path"), Var("ID"), movable, start, wps[0], map_name, Var("path"))
+                    print(c)
+                    motion_constraints.append(c)
+                else:
+                    raise ValueError(f"Unsupported motion constraint of type {type(mc)}: {mc}")
+
+                constraint_list.append(KeyVal(Sym('motion'), List(motion_constraints)))
+
                 
         return Tuple([
             KeyVal(Sym('name'), name),
@@ -563,4 +593,51 @@ class UpCdbConverter:
             name = Sym(utype.name)
             domain = List([self._convert_object(o) for o in problem.objects(utype)])
             type_look_up[utype] = KeyVal(name, domain)
-            
+
+    def _convert_motion_info(self, problem):
+        next_map_idx = 0
+        constraints = []
+        poses = {}
+
+        print("GETTING MOTION OBJECT INFO")
+
+        for utype in problem.user_types:
+            print(utype, type(utype))
+            if utype.is_configuration_type():
+                m = utype.occupancy_map
+
+                if m not in self.map_look_up.keys():
+                    next_map_idx += 1
+                    name = Sym(f"map-{next_map_idx}")
+                    self.map_look_up[m] = name
+                    constraints.append(Tuple(Sym("map"), name, Tuple(Sym("relative"), Str(m.filename))))
+                else:
+                    name = self.map_look_up[m]
+
+                if name not in poses.keys():
+                    poses[name] = []
+
+                for o in problem.objects(utype):
+                    symbol = Sym(o.name)
+                    cfg = Tuple([Real(x) for x in list(o.configuration)])
+                    poses[name].append(KeyVal(symbol, cfg))
+
+            elif utype.is_movable_type():
+                for o in problem.objects(utype):
+                    # TODO: Missing URDF support
+                    # TODO: Add REEDSSHEP and Turning Radius to CDB
+                    name = Sym(o.name)
+                    model = parse_term(o.model)
+                    constraints.append(Tuple(Sym("frame"), name, model))
+
+
+
+        for map_name in poses.keys():
+            con = Tuple(Sym("poses"), map_name, List(poses[map_name]))
+            constraints.append(con)
+
+        return Set([
+            KeyVal(Sym("motion"), Set(constraints))
+        ])
+
+

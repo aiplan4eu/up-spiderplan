@@ -52,7 +52,7 @@ SPIDER_REPO = "https://github.com/aiplan4eu/up-spiderplan.git"
 class EngineImpl(unified_planning.engines.Engine):
     def __init__(self, **options):
         self._problem = None
-        self.install_grpc_server()
+        # self.install_grpc_server()
         if len(options) > 0:
             raise
 
@@ -97,6 +97,9 @@ class EngineImpl(unified_planning.engines.Engine):
 
         self._problem = problem
         cdb = self._convert(problem)
+
+        print(Logger.pretty_print(cdb, 1))
+
         solution_cdb = self._solve(cdb)
 
         if solution_cdb == Sym("NIL"):

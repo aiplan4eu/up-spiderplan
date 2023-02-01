@@ -9,7 +9,6 @@ import org.spiderplan.solver.SpiderPlanFactory
 import org.aiddl.core.scala.function.Function
 import org.aiddl.core.scala.util.logger.Logger
 import org.spiderplan.solver.SpiderPlanGraphSearch
-
 import org.aiddl.common.scala.planning.state_variable.heuristic.{CausalGraphHeuristic, FastForwardHeuristic}
 import org.aiddl.core.scala.function
 import org.aiddl.core.scala.representation.*
@@ -23,6 +22,7 @@ import org.spiderplan.solver.domain.DomainConstraintSolver
 import org.spiderplan.solver.temporal.TemporalConstraintSolver
 import org.spiderplan.solver.SpiderPlan.Type.*
 import org.aiddl.common.scala.planning.PlanningTerm.*
+import org.spiderplan.lib.coordination_oru.propagator.MotionPlanningPropagator
 
 import scala.concurrent.ExecutionContext
 import java.util.logging.Level
@@ -50,7 +50,8 @@ object Main extends App {
           new DomainConstraintSolver {
             logSetName("Domain")
           },
-          new TemporalConstraintSolver //{ setVerbose(verbosityLevel) }
+          new TemporalConstraintSolver, //{ setVerbose(verbosityLevel) }
+          new MotionPlanningPropagator
         )
 
         override val solvers: Vector[FlawResolver] = Vector(
@@ -64,7 +65,7 @@ object Main extends App {
         )
       }
       spiderPlan.logSetName("SpiderPlan")
-      spiderPlan.logConfigRecursive(Level.WARNING)
+      spiderPlan.logConfigRecursive(Level.INFO)
 
       StopWatch.recordedTimes.clear()
 

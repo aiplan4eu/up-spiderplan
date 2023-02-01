@@ -10,10 +10,11 @@ robot = problems["robot"].problem
 basic_wc = problems["basic_with_costs"].problem
 counter_2_50 = problems["counter_to_50"].problem
 match_cellar = problems["matchcellar"].problem
-
 robot_no_neg = problems["robot_no_negative_preconditions"].problem
 
-selected = robot_no_neg
+tamp = problems["tamp_feasible"].problem
+
+selected = tamp
 
 print(selected)
 
