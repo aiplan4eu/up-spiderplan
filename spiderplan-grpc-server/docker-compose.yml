@@ -1,0 +1,7 @@
+version: "3.3"
+services:
+  web:
+    container_name: up-spiderplan-server
+    build: .
+    ports:
+      - "8002:8061"

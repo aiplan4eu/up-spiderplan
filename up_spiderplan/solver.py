@@ -56,6 +56,9 @@ class EngineImpl(unified_planning.engines.Engine):
         if len(options) > 0:
             raise
 
+    def copy_file_to_container(self, name):
+        os.system(f"docker cp ./{name} up-spiderplan-server:/planner/{name}")
+
     def install_grpc_server(self):
         subprocess.run(["git", "clone", "-b", SPIDER_TAG, SPIDER_REPO])
         shutil.move(SPIDER_PUBLIC, SPIDER_dst)
