@@ -1,5 +1,8 @@
+import os
+
 import unified_planning.model.problem
 from aiddl_core.util.logger import Logger
+from unified_planning.model.tamp.objects import MotionModels
 from unified_planning.model import InstantaneousAction, StartTiming, TimepointKind, Timing, TimeInterval
 from unified_planning.model.tamp import InstantaneousMotionAction, Waypoints, ConfigurationObject
 from unified_planning.shortcuts import ConfigurationType
@@ -63,6 +66,7 @@ class UpCdbConverter:
     def __init__(self):
         self.next_id = 0
         self.map_look_up = {}
+        self.map_files = {}
 
     def __call__(self, problem):
         cdb = Set([])
@@ -610,7 +614,23 @@ class UpCdbConverter:
                     next_map_idx += 1
                     name = Sym(f"map-{next_map_idx}")
                     self.map_look_up[m] = name
-                    constraints.append(Tuple(Sym("map"), name, Tuple(Sym("relative"), Str(m.filename))))
+
+                    # Copy YAML and image file into running Docker container
+                    filename = m.filename.split("/")[-1]
+                    path = m.filename.replace(filename, "")
+                    image_filename = None
+                    f = open(m.filename)
+                    for l in f.readlines():
+                        if "image" in l:
+                            image_filename = l.split("image: ")[1].strip()
+                    f.close()
+                    self.map_files[name] = m.filename
+                    cmd_yaml = f"docker cp {path}/{filename} up-spiderplan-server:/planner/{filename}"
+                    cmd_image = f"docker cp {path}/{image_filename} up-spiderplan-server:/planner/{image_filename}"
+                    os.system(cmd_yaml)
+                    os.system(cmd_image)
+
+                    constraints.append(Tuple(Sym("map"), name, Str(filename)))
                 else:
                     name = self.map_look_up[m]
 
@@ -624,13 +644,21 @@ class UpCdbConverter:
 
             elif utype.is_movable_type():
                 for o in problem.objects(utype):
-                    # TODO: Missing URDF support
                     # TODO: Add REEDSSHEP and Turning Radius to CDB
                     name = Sym(o.name)
-                    model = parse_term(o.model)
-                    constraints.append(Tuple(Sym("frame"), name, model))
-
-
+                    footprint = List([Tuple(Real(p[0]), Real(p[1])) for p in o.footprint])
+                    parameters = []
+                    if o.motion_model == MotionModels.REEDSSHEPP:
+                        model = Sym("ReedsSheppCar")
+                        parameters.append(KeyVal(Sym("turning-radius"), Real(o.parameters["turning_radius"])))
+                    else:
+                        raise ValueError(f"Motion model {o.motion_model} is not supported by SpiderPlan")
+                    constraints.append(Tuple(Sym("frame"), name, footprint))
+                    constraints.append(Tuple(Sym("robot"), name, List(
+                        KeyVal(Sym("footprint"), footprint),
+                        KeyVal(Sym("motion-model"), model),
+                        KeyVal(Sym("parameters"), List(parameters)
+                    ))))
 
         for map_name in poses.keys():
             con = Tuple(Sym("poses"), map_name, List(poses[map_name]))

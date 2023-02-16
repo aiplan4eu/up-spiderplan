@@ -3,8 +3,9 @@ FROM ubuntu:20.04
 WORKDIR /planner
 COPY . /planner
 
-RUN apt-get update \
-  && apt-get -y install git curl gnupg
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+RUN apt-get -y install git curl gnupg libompl-dev build-essential cmake
 
 RUN echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | tee /etc/apt/sources.list.d/sbt.list
 RUN echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee /etc/apt/sources.list.d/sbt_old.list
@@ -21,7 +22,14 @@ ENV PATH="/planner/deps/jdk-12/bin:${PATH}"
 
 RUN cd deps && git clone https://github.com/FedericoPecora/coordination_oru.git \
  && cd coordination_oru \
- && ./gradlew install
+ && ./gradlew install \
+ && cd SimpleReedsSheppCarPlanner \
+ && mkdir build \
+ && cd build \
+ && cmake .. \
+ && make \
+ && make install \
+ && ldconfig
  
 RUN cd deps && git clone https://github.com/uwe-koeckemann/AIDDL.git \
  && cd AIDDL \

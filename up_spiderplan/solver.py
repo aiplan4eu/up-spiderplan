@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import math
 import subprocess
 import shutil
 import os
@@ -26,7 +26,7 @@ from unified_planning.exceptions import UPUnsupportedProblemTypeError
 from unified_planning.engines import PlanGenerationResultStatus, Credits
 from unified_planning.model import FNode, ProblemKind, Type as UPType
 
-from aiddl_core.representation import Term, Sym
+from aiddl_core.representation import Term, Sym, Var
 from aiddl_core.representation import Tuple as AiddlTuple
 
 from aiddl_core.util.logger import Logger
@@ -34,6 +34,9 @@ from aiddl_external_grpc_python.container import GrpcFunction
 
 from up_spiderplan.converter import UpCdbConverter
 
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
 
 credits = Credits('spiderplan',
                   'Örebro University',
@@ -53,11 +56,12 @@ class EngineImpl(unified_planning.engines.Engine):
     def __init__(self, **options):
         self._problem = None
         # self.install_grpc_server()
+        self.conv = UpCdbConverter()
         if len(options) > 0:
             raise
 
-    def copy_file_to_container(self, name):
-        os.system(f"docker cp ./{name} up-spiderplan-server:/planner/{name}")
+    def copy_file_to_container(self, path, name):
+        os.system(f"docker cp {path}/{name} up-spiderplan-server:/planner/{name}")
 
     def install_grpc_server(self):
         subprocess.run(["git", "clone", "-b", SPIDER_TAG, SPIDER_REPO])
@@ -113,13 +117,12 @@ class EngineImpl(unified_planning.engines.Engine):
 
 
     def _convert(self, problem: 'unified_planning.model.Problem') -> Term:
-        conv = UpCdbConverter()
-        return conv(problem)
+        return self.conv(problem)
 
     def _solve(self, cdb: 'aiddl_core.representation.Set') -> Term:
         # Call Spiderplan and get resulting CDB or NIL if no solution exists.
         container = Container()
-        spiderplan_proxy = GrpcFunction("localhost", 8011, Sym("org.spiderplan.unified-planning.basic-graph-search"), container)
+        spiderplan_proxy = GrpcFunction("localhost", 8061, Sym("org.spiderplan.unified-planning.basic-graph-search"), container)
 
         mod_name = Sym("aiplan4eu.up-spiderplan.up-input")
         container.add_module(mod_name)
@@ -153,6 +156,46 @@ class EngineImpl(unified_planning.engines.Engine):
                 earliest_start_time = cdb[Sym("propagated-value")][AiddlTuple(Sym("ST"), s[0])][0]
                 plan_stmts.append((earliest_start_time, s))
 
+                if a.get(Sym("constraints")).contains_key(Sym("motion")):
+                    mcs = a.get(Sym("constraints")).get(Sym("motion"))
+
+        for mc in cdb.get_or_default(Sym("motion"), []):
+            if mc[0] == Sym("path") and not isinstance(mc[1], Var):
+                map_name = mc[5]
+                map_file = self.conv.map_files[map_name]
+                map_path = map_file.replace(map_file.split("/")[-1], "")
+
+                image_file = None
+                resolution = 1.0
+                f = open(map_file)
+                for l in f.readlines():
+                    if "image: " in l:
+                        image_file = map_path + "/" + l.replace("image: ", "").strip()
+                    if "resolution: " in l:
+                        resolution = float(l.replace("resolution: ", "").strip())
+                if image_file is not None:
+                    print(mc)
+                    img = np.asarray(Image.open(image_file))
+                    imgplot = plt.imshow(img)
+                    path = mc[6]
+                    print(mc[6])
+                    for step in path.unpack():
+                        x = step[0][0]/resolution
+                        y = step[0][1]/resolution
+                        w = step[0][2]
+
+                        x_d = math.sin(w)
+                        y_d = math.cos(w)
+
+                        plt.arrow(x, y, x_d, y_d)
+                    plt.waitforbuttonpress()
+
+                print("Found path in map", map_name)
+                print("Fname:", map_file)
+
+                print(path)
+
+
         plan_stmts = sorted(plan_stmts, key=lambda x: x[0])
 
         actions: List[up.plans.ActionInstance] = []
@@ -170,7 +213,7 @@ class EngineImpl(unified_planning.engines.Engine):
                 action_name = str(aiddl_action)
 
             up_action = self._problem.action(action_name)
-            expr_manager = self._problem.env.expression_manager
+            expr_manager = self._problem.environment.expression_manager
             param = tuple(expr_manager.ObjectExp(self._problem.object(o_name)) for o_name in action_params)
             actions.append(up.plans.ActionInstance(up_action, param))
 

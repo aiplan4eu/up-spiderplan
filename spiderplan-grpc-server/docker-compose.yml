@@ -4,4 +4,4 @@ services:
     container_name: up-spiderplan-server
     build: .
     ports:
-      - "8002:8061"
+      - "8011:8061"

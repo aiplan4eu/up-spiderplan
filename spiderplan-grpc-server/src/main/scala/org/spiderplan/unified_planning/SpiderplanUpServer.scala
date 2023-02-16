@@ -96,7 +96,7 @@ object Main extends App {
 
   val c = new Container()
   c.addFunction(Sym("org.spiderplan.unified-planning.basic-graph-search"), spiderPlan)
-  val server = new ContainerServer(ExecutionContext.global, 8011, c)
+  val server = new ContainerServer(ExecutionContext.global, 8061, c)
 
   server.start()
   server.blockUntilShutdown()
