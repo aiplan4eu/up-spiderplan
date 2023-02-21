@@ -82,15 +82,23 @@ object Main extends App {
       println(s"A: ${input(Temporal).asCol.length} B: ${acs.asCol.length}")
       */
 
-      StopWatch.start("[SpiderPlan] Main")
-      val r = spiderPlan.solve(input) match {
-        case Some(solution) => solution
-        case None => Sym("NIL")
+      try {
+        StopWatch.start("[SpiderPlan] Main")
+        val r = spiderPlan.solve(input) match {
+          case Some(solution) => solution
+          case None => Sym("NIL")
+        }
+        StopWatch.stop("[SpiderPlan] Main")
+        spiderPlan.searchGraph2File("search.dot")
+        println(StopWatch.summary)
+        r
+      } catch {
+        case e: Exception => {
+          e.printStackTrace()
+          Sym("NIL")
+        }
       }
-      StopWatch.stop("[SpiderPlan] Main")
-      spiderPlan.searchGraph2File("search.dot")
-      println(StopWatch.summary)
-      r
+
     }
   }
 

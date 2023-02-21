@@ -25,7 +25,8 @@ from aiddl_core.container import Container, Entry
 from unified_planning.exceptions import UPUnsupportedProblemTypeError
 from unified_planning.engines import PlanGenerationResultStatus, Credits
 from unified_planning.model import FNode, ProblemKind, Type as UPType
-
+from unified_planning.model.tamp import ReedsSheppPath
+from unified_planning.model.tamp import Waypoints
 from aiddl_core.representation import Term, Sym, Var
 from aiddl_core.representation import Tuple as AiddlTuple
 
@@ -146,9 +147,19 @@ class EngineImpl(unified_planning.engines.Engine):
 
         op_map = {}
 
+
         for a in cdb.get((Sym("operator"))):
             op_map[a[Sym("name")]] = a
 
+        path_expressions = {}
+
+        for mc in cdb.get_or_default(Sym("motion"), []):
+            if mc[0] == Sym("path") and not isinstance(mc[1], Var):
+                if mc[1] not in path_expressions.keys():
+                    path_expressions[mc[1]] = []
+                path_expressions[mc[1]].append(mc)
+
+        instance_map = {}
         plan_stmts = []
         for s in cdb[Sym("statement")]:
             variable = s[1].key
@@ -156,44 +167,52 @@ class EngineImpl(unified_planning.engines.Engine):
                 earliest_start_time = cdb[Sym("propagated-value")][AiddlTuple(Sym("ST"), s[0])][0]
                 plan_stmts.append((earliest_start_time, s))
 
+                operator = op_map[variable]
+                id_var = operator[Sym("id")]
+                interval_pattern = operator[Sym("interval")]
+                sub = interval_pattern.match(s[0])
+                id = sub.substitute(id_var)
+
+                instance_map[s] = id
+
                 if a.get(Sym("constraints")).contains_key(Sym("motion")):
                     mcs = a.get(Sym("constraints")).get(Sym("motion"))
 
-        for mc in cdb.get_or_default(Sym("motion"), []):
-            if mc[0] == Sym("path") and not isinstance(mc[1], Var):
-                map_name = mc[5]
-                map_file = self.conv.map_files[map_name]
-                map_path = map_file.replace(map_file.split("/")[-1], "")
-
-                image_file = None
-                resolution = 1.0
-                f = open(map_file)
-                for l in f.readlines():
-                    if "image: " in l:
-                        image_file = map_path + "/" + l.replace("image: ", "").strip()
-                    if "resolution: " in l:
-                        resolution = float(l.replace("resolution: ", "").strip())
-                if image_file is not None:
-                    print(mc)
-                    img = np.asarray(Image.open(image_file))
-                    imgplot = plt.imshow(img)
-                    path = mc[6]
-                    print(mc[6])
-                    for step in path.unpack():
-                        x = step[0][0]/resolution
-                        y = step[0][1]/resolution
-                        w = step[0][2]
-
-                        x_d = math.sin(w)
-                        y_d = math.cos(w)
-
-                        plt.arrow(x, y, x_d, y_d)
-                    plt.waitforbuttonpress()
-
-                print("Found path in map", map_name)
-                print("Fname:", map_file)
-
-                print(path)
+        # for mc in cdb.get_or_default(Sym("motion"), []):
+        #     if mc[0] == Sym("path") and not isinstance(mc[1], Var):
+        #         map_name = mc[5]
+        #         map_file = self.conv.map_files[map_name]
+        #         map_path = map_file.replace(map_file.split("/")[-1], "")
+        #
+        #         image_file = None
+        #         resolution = 1.0
+        #         f = open(map_file)
+        #         for l in f.readlines():
+        #             if "image: " in l:
+        #                 image_file = map_path + "/" + l.replace("image: ", "").strip()
+        #             if "resolution: " in l:
+        #                 resolution = float(l.replace("resolution: ", "").strip())
+        #         if image_file is not None:
+        #             print(mc)
+        #             img = np.asarray(Image.open(image_file))
+        #             imgplot = plt.imshow(img)
+        #             path = mc[6]
+        #             print(mc[6])
+        #             for step in path.unpack():
+        #                 x = step[0][0]/resolution
+        #                 y = step[0][1]/resolution
+        #                 w = step[0][2]
+        #
+        #                 x_d = math.sin(w)
+        #                 y_d = math.cos(w)
+        #
+        #                 plt.arrow(x, y, x_d, y_d)
+        #             plt.waitforbuttonpress()
+        #
+        #         print("Found path in map", map_name)
+        #         print("Fname:", map_file)
+        #
+        #         print(path)
 
 
         plan_stmts = sorted(plan_stmts, key=lambda x: x[0])
@@ -202,6 +221,7 @@ class EngineImpl(unified_planning.engines.Engine):
         print("Plan statements:")
         for _, s in plan_stmts:
             print(s)
+            id = instance_map[s]
 
             aiddl_action = s[1].key
             action_params = []
@@ -212,10 +232,31 @@ class EngineImpl(unified_planning.engines.Engine):
             else:
                 action_name = str(aiddl_action)
 
+            paths = {}
+            if id in path_expressions.keys():
+                for pathExp in path_expressions[id]:
+                    path = pathExp[6].unpack()
+                    upPath = ReedsSheppPath(path)
+
+                    mover = str(path[2])
+                    start = str(path[3])
+                    wps = []
+                    if isinstance(pathExp[4], List):
+                        for wp in pathExp[4]:
+                            wps.append(elf._problem.object(str(wp)))
+                    else:
+                        wps.append(self._problem.object(str(pathExp[4])))
+
+                    upMotionCon = Waypoints(self._problem.object(mover), self._problem.object(start), wps)
+                    paths[upMotionCon] = path
+
             up_action = self._problem.action(action_name)
             expr_manager = self._problem.environment.expression_manager
             param = tuple(expr_manager.ObjectExp(self._problem.object(o_name)) for o_name in action_params)
-            actions.append(up.plans.ActionInstance(up_action, param))
+            if len(paths) == 0:
+                actions.append(up.plans.ActionInstance(up_action, param))
+            else:
+                actions.append(up.plans.ActionInstance(up_action, param, None, paths))
 
         for up_action in actions:
             print(up_action)

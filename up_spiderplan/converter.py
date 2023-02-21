@@ -656,7 +656,7 @@ class UpCdbConverter:
                     constraints.append(Tuple(Sym("frame"), name, footprint))
                     constraints.append(Tuple(Sym("robot"), name, List(
                         KeyVal(Sym("footprint"), footprint),
-                        KeyVal(Sym("motion-model"), model),
+                        KeyVal(Sym("model"), model),
                         KeyVal(Sym("parameters"), List(parameters)
                     ))))
 
