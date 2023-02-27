@@ -655,10 +655,11 @@ class UpCdbConverter:
                         raise ValueError(f"Motion model {o.motion_model} is not supported by SpiderPlan")
                     constraints.append(Tuple(Sym("frame"), name, footprint))
                     constraints.append(Tuple(Sym("robot"), name, List(
+                        KeyVal(Sym("name"), name),
                         KeyVal(Sym("footprint"), footprint),
                         KeyVal(Sym("model"), model),
-                        KeyVal(Sym("parameters"), List(parameters)
-                    ))))
+                        KeyVal(Sym("turning-radius"), Real(o.parameters["turning_radius"]))
+                    )))
 
         for map_name in poses.keys():
             con = Tuple(Sym("poses"), map_name, List(poses[map_name]))

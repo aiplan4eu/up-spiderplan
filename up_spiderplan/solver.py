@@ -178,41 +178,7 @@ class EngineImpl(unified_planning.engines.Engine):
                 if a.get(Sym("constraints")).contains_key(Sym("motion")):
                     mcs = a.get(Sym("constraints")).get(Sym("motion"))
 
-        # for mc in cdb.get_or_default(Sym("motion"), []):
-        #     if mc[0] == Sym("path") and not isinstance(mc[1], Var):
-        #         map_name = mc[5]
-        #         map_file = self.conv.map_files[map_name]
-        #         map_path = map_file.replace(map_file.split("/")[-1], "")
-        #
-        #         image_file = None
-        #         resolution = 1.0
-        #         f = open(map_file)
-        #         for l in f.readlines():
-        #             if "image: " in l:
-        #                 image_file = map_path + "/" + l.replace("image: ", "").strip()
-        #             if "resolution: " in l:
-        #                 resolution = float(l.replace("resolution: ", "").strip())
-        #         if image_file is not None:
-        #             print(mc)
-        #             img = np.asarray(Image.open(image_file))
-        #             imgplot = plt.imshow(img)
-        #             path = mc[6]
-        #             print(mc[6])
-        #             for step in path.unpack():
-        #                 x = step[0][0]/resolution
-        #                 y = step[0][1]/resolution
-        #                 w = step[0][2]
-        #
-        #                 x_d = math.sin(w)
-        #                 y_d = math.cos(w)
-        #
-        #                 plt.arrow(x, y, x_d, y_d)
-        #             plt.waitforbuttonpress()
-        #
-        #         print("Found path in map", map_name)
-        #         print("Fname:", map_file)
-        #
-        #         print(path)
+
 
 
         plan_stmts = sorted(plan_stmts, key=lambda x: x[0])
@@ -235,19 +201,23 @@ class EngineImpl(unified_planning.engines.Engine):
             paths = {}
             if id in path_expressions.keys():
                 for pathExp in path_expressions[id]:
+                    print(pathExp)
                     path = pathExp[6].unpack()
                     upPath = ReedsSheppPath(path)
 
-                    mover = str(path[2])
-                    start = str(path[3])
+                    mover = str(pathExp[2])
+                    start = str(pathExp[3])
                     wps = []
                     if isinstance(pathExp[4], List):
                         for wp in pathExp[4]:
-                            wps.append(elf._problem.object(str(wp)))
+                            wps.append(self._problem.object(str(wp)))
                     else:
                         wps.append(self._problem.object(str(pathExp[4])))
 
-                    upMotionCon = Waypoints(self._problem.object(mover), self._problem.object(start), wps)
+                    upMotionCon = Waypoints(
+                        self._problem.object(mover),
+                        self._problem.object(start),
+                        wps)
                     paths[upMotionCon] = path
 
             up_action = self._problem.action(action_name)
@@ -256,10 +226,12 @@ class EngineImpl(unified_planning.engines.Engine):
             if len(paths) == 0:
                 actions.append(up.plans.ActionInstance(up_action, param))
             else:
-                actions.append(up.plans.ActionInstance(up_action, param, None, paths))
+                actions.append(up.plans.ActionInstance(up_action, param, None, motion_paths=paths))
 
         for up_action in actions:
             print(up_action)
+            for mc in up_action.motion_paths.keys():
+                print(mc, up_action.motion_paths[mc])
 
         return up.plans.SequentialPlan(actions)
 
