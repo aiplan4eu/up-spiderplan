@@ -14,18 +14,13 @@ A constraint-based planning engine for unified planning.
 
 - [x] Motion planning constraints extracted from UP problem 
 - [x] Solve problem with motion constraints and get a plan with paths
-- [ ] Fix Spiderplan motion planner to use correct motion model
-- [ ] Allow configuration with available motion planning algorithms
-- [ ] Convert plan into UP plan with motion
+- [x] Fix Spiderplan motion planner to use correct motion model
+- [x] Allow configuration with available motion planning algorithms
+- [x] Convert plan into UP plan with motion
 
 ### 0.3.0 Running the Engine in the UP
  
-- [ ] Fix spiderplan grpc server in docker
-- [ ] Use docker to run server through up-spiderplan
-- [ ] Local install of spiderplan as a UP engine
+- [x] Fix spiderplan grpc server in docker
+- [x] Use docker to run server through up-spiderplan
 
-### 0.x.0
-
-- Temporal planning
-- Spiderplan configuration through UP
 

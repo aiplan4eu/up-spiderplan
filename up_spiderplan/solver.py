@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import math
 import subprocess
 import shutil
 import os
+import time
 
 from functools import partial
 from typing import IO, Callable, List, Dict, Optional, Set, Tuple
@@ -35,9 +35,7 @@ from aiddl_external_grpc_python.container import GrpcFunction
 
 from up_spiderplan.converter import UpCdbConverter
 
-import matplotlib.pyplot as plt
-import numpy as np
-from PIL import Image
+import tempfile
 
 credits = Credits('spiderplan',
                   'Örebro University',
@@ -48,10 +46,11 @@ credits = Credits('spiderplan',
                   'Spiderplan is an extentable constraint-based hybrid planner.'
                 )
 
-SPIDER_dst = "./tmp/"
+SPIDER_dst = tempfile.gettempdir() + "/"
 SPIDER_PUBLIC = "up-spiderplan"
 SPIDER_TAG = "master"
 SPIDER_REPO = "https://github.com/aiplan4eu/up-spiderplan.git"
+SPIDER_PORT = 8061
 
 class EngineImpl(unified_planning.engines.Engine):
     def __init__(self, **options):
@@ -68,20 +67,33 @@ class EngineImpl(unified_planning.engines.Engine):
         subprocess.run(["git", "clone", "-b", SPIDER_TAG, SPIDER_REPO])
         shutil.move(SPIDER_PUBLIC, SPIDER_dst)
         curr_dir = os.getcwd()
-        os.chdir(SPIDER_dst  + "spiderplan_grpc_server")
+        os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
         os.system("docker-compose build")
         os.chdir(curr_dir)
 
+    def grpc_server_installed(self):
+        print(SPIDER_dst  + SPIDER_PUBLIC)
+        print(os.path.exists(SPIDER_dst  + SPIDER_PUBLIC))
+        return os.path.exists(SPIDER_dst  + SPIDER_PUBLIC)
+
+    def grpc_server_up(self):
+        import socket
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            return s.connect_ex(('localhost', SPIDER_PORT)) == 0
+
     def start_grpc_server(self):
         curr_dir = os.getcwd()
-        os.chdir(SPIDER_dst)
+        os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
         os.system("docker-compose up -d")
         os.chdir(curr_dir)
+        while not self.grpc_server_up():
+            time.sleep(1.0)
+
 
     def stop_grpc_server(self):
         curr_dir = os.getcwd()
-        os.chdir(SPIDER_dst)
-        os.system("docker-compose down")
+        os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
+        os.system("docker-compose stop")
         os.chdir(curr_dir) 
 
 
@@ -103,6 +115,9 @@ class EngineImpl(unified_planning.engines.Engine):
         if output_stream is not None:
             warnings.warn('SpiderPlan does not support output stream.', UserWarning)
 
+        if not self.grpc_server_installed():
+            self.install_grpc_server()
+
         self._problem = problem
         cdb = self._convert(problem)
 
@@ -123,7 +138,7 @@ class EngineImpl(unified_planning.engines.Engine):
     def _solve(self, cdb: 'aiddl_core.representation.Set') -> Term:
         # Call Spiderplan and get resulting CDB or NIL if no solution exists.
         container = Container()
-        spiderplan_proxy = GrpcFunction("localhost", 8061, Sym("org.spiderplan.unified-planning.basic-graph-search"), container)
+        spiderplan_proxy = GrpcFunction("localhost", SPIDER_PORT, Sym("org.spiderplan.unified-planning.basic-graph-search"), container)
 
         mod_name = Sym("aiplan4eu.up-spiderplan.up-input")
         container.add_module(mod_name)
@@ -134,7 +149,9 @@ class EngineImpl(unified_planning.engines.Engine):
         print("SpiderPlan Problem:")
         print(Logger.pretty_print(cdb, 0))
 
+        self.start_grpc_server()
         answer = spiderplan_proxy(cdb)
+        self.stop_grpc_server()
 
         print("SpiderPlan Solution:")
         print(Logger.pretty_print(answer, 0))
