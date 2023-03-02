@@ -23,4 +23,6 @@ A constraint-based planning engine for unified planning.
 - [x] Fix spiderplan grpc server in docker
 - [x] Use docker to run server through up-spiderplan
 
+## Issues
 
+- [ ] Waiting for docker container does not work

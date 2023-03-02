@@ -72,22 +72,23 @@ class EngineImpl(unified_planning.engines.Engine):
         os.chdir(curr_dir)
 
     def grpc_server_installed(self):
-        print(SPIDER_dst  + SPIDER_PUBLIC)
-        print(os.path.exists(SPIDER_dst  + SPIDER_PUBLIC))
         return os.path.exists(SPIDER_dst  + SPIDER_PUBLIC)
 
-    def grpc_server_up(self):
-        import socket
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            return s.connect_ex(('localhost', SPIDER_PORT)) == 0
+    # def grpc_server_up(self):
+    #     import socket
+    #     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #         r = s.connect_ex(('localhost', SPIDER_PORT))
+    #         print(r)
+    #         return r == 0
 
     def start_grpc_server(self):
         curr_dir = os.getcwd()
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
         os.system("docker-compose up -d")
         os.chdir(curr_dir)
-        while not self.grpc_server_up():
-            time.sleep(1.0)
+        time.sleep(3.0)
+        # while not self.grpc_server_up():
+        #     time.sleep(1.0)
 
 
     def stop_grpc_server(self):
@@ -121,7 +122,7 @@ class EngineImpl(unified_planning.engines.Engine):
         self._problem = problem
         cdb = self._convert(problem)
 
-        print(Logger.pretty_print(cdb, 1))
+        # print(Logger.pretty_print(cdb, 1))
 
         solution_cdb = self._solve(cdb)
 
@@ -146,24 +147,22 @@ class EngineImpl(unified_planning.engines.Engine):
         container.set_entry(e, mod_name)
         container.export(mod_name, "converted-from-up.aiddl")
 
-        print("SpiderPlan Problem:")
-        print(Logger.pretty_print(cdb, 0))
+        # print("SpiderPlan Problem:")
+        # print(Logger.pretty_print(cdb, 0))
 
         self.start_grpc_server()
         answer = spiderplan_proxy(cdb)
         self.stop_grpc_server()
 
-        print("SpiderPlan Solution:")
-        print(Logger.pretty_print(answer, 0))
+        # print("SpiderPlan Solution:")
+        # print(Logger.pretty_print(answer, 0))
 
         return answer
 
     def _extract_plan(self, cdb: 'aiddl_core.representation.Set') -> up.plans.Plan:
         # Convert CDB to a plan type supported by UP
         # -> sequence or partial-order based on EST in propagated STN
-
         op_map = {}
-
 
         for a in cdb.get((Sym("operator"))):
             op_map[a[Sym("name")]] = a
@@ -201,9 +200,9 @@ class EngineImpl(unified_planning.engines.Engine):
         plan_stmts = sorted(plan_stmts, key=lambda x: x[0])
 
         actions: List[up.plans.ActionInstance] = []
-        print("Plan statements:")
+        # print("Plan statements:")
         for _, s in plan_stmts:
-            print(s)
+            # print(s)
             id = instance_map[s]
 
             aiddl_action = s[1].key
@@ -218,7 +217,7 @@ class EngineImpl(unified_planning.engines.Engine):
             paths = {}
             if id in path_expressions.keys():
                 for pathExp in path_expressions[id]:
-                    print(pathExp)
+                    # print(pathExp)
                     path = pathExp[6].unpack()
                     upPath = ReedsSheppPath(path)
 
@@ -245,10 +244,10 @@ class EngineImpl(unified_planning.engines.Engine):
             else:
                 actions.append(up.plans.ActionInstance(up_action, param, None, motion_paths=paths))
 
-        for up_action in actions:
-            print(up_action)
-            for mc in up_action.motion_paths.keys():
-                print(mc, up_action.motion_paths[mc])
+        # for up_action in actions:
+            # print(up_action)
+        #    for mc in up_action.motion_paths.keys():
+                # print(mc, up_action.motion_paths[mc])
 
         return up.plans.SequentialPlan(actions)
 

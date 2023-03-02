@@ -50,7 +50,6 @@ def merge_cdb(a, b):
             result[k_a] = kvp.value
 
     for kvp in b:
-        print(kvp)
         k_b = kvp.key
         if k_b not in result.keys():
             result[k_b] = kvp.value
@@ -71,7 +70,7 @@ class UpCdbConverter:
     def __call__(self, problem):
         cdb = Set([])
         init = self._convert_initial_values(problem.initial_values)
-        print(init)
+        # print(init)
         cdb = merge_cdb(cdb, init)
         goal = self._convert_goal(problem.goals)
         cdb = merge_cdb(cdb, goal)
@@ -129,7 +128,7 @@ class UpCdbConverter:
             if len(signature) == 0:
                 signatures.append(KeyVal(name, r_type))
             else:
-                print(f)
+                # print(f)
                 signatures.append(KeyVal(Tuple([name] + signature), r_type))
 
         return Set([
@@ -325,7 +324,7 @@ class UpCdbConverter:
             else:
                 spider_op = self._convert_durative_action(o, t_look_up)
 
-            print("SPIDER:", Logger.pretty_print(spider_op, 0))
+            # print("SPIDER:", Logger.pretty_print(spider_op, 0))
 
             name = spider_op[Sym("name")]
             signature = spider_op[Sym("signature")]
@@ -333,7 +332,7 @@ class UpCdbConverter:
             if len(signature) == 0:
                 signatures.append(KeyVal(name, Sym("t_bool")))
             else:
-                print(signature)
+                # print(signature)
                 sig = [name[0]]
                 for p in signature:
                     sig.append(p.value)
@@ -346,7 +345,7 @@ class UpCdbConverter:
         ])
 
     def _convert_durative_action(self, a, t_look_up):
-        print("-------------------------------------")
+        # print("-------------------------------------")
         base_name = Sym(a.name)
         id_var = Var('ID')
         op_id = Tuple([base_name, id_var])
@@ -395,8 +394,8 @@ class UpCdbConverter:
                 if cond_aiddl.contains_key(Sym('csp')):
                     for p in cond_aiddl[Sym('csp')]:
                         csp.append(p)
-                print("COND:", cond_aiddl)
-                print("TEMP:", ac_sub)
+                # print("COND:", cond_aiddl)
+                # print("TEMP:", ac_sub)
 
                 temporal.append(ac_sub)
 
@@ -416,7 +415,7 @@ class UpCdbConverter:
                 ac_sub = ac.substitute(sub)
                 temporal.append(ac_sub)
                 constraints = self._convert_effect(e, op_id, self.next_id, durative=True)
-                print("Effect extracted:", constraints)
+                # print("Effect extracted:", constraints)
                 if constraints.contains_key(Sym('effects')):
                     for p in constraints[Sym('effects')]:
                         effects.append(p)
@@ -464,7 +463,7 @@ class UpCdbConverter:
         for e in o.effects:
             effect_id += 1
             constraints = self._convert_effect(e, op_id, effect_id)
-            print("Effect extracted:", constraints)
+            # print("Effect extracted:", constraints)
             if constraints.contains_key(Sym('effects')):
                 for p in constraints[Sym('effects')]:
                     effect_vars.append(p[1].key)
@@ -493,7 +492,7 @@ class UpCdbConverter:
             name = Tuple(args)
         signature = List(sig)
 
-        print(preconditions)
+        # print(preconditions)
 
         constraint_list = []
         constraint_list.append(KeyVal(Sym('temporal'), List(temporal)))
@@ -505,18 +504,18 @@ class UpCdbConverter:
             #    (path ?ID ?r ?l1 ?l2 map-1 ?path)
             #}
             motion_constraints = []
-            print("CONVERTING MOTION CONSTRAINTS")
+            # print("CONVERTING MOTION CONSTRAINTS")
             for mc in o.motion_constraints:
                 if isinstance(mc, Waypoints):
                     movable = self._convert_fnode(mc.movable)
                     start = self._convert_fnode(mc.starting)
                     wps = List([self._convert_fnode(wp) for wp in mc.waypoints])
-                    print(movable)
+                    # print(movable)
 
                     map_name = self.map_look_up[mc.starting.type.occupancy_map]
 
                     c = Tuple(Sym("path"), Var("ID"), movable, start, wps[0], map_name, Var("path"))
-                    print(c)
+                    # print(c)
                     motion_constraints.append(c)
                 else:
                     raise ValueError(f"Unsupported motion constraint of type {type(mc)}: {mc}")
@@ -603,10 +602,10 @@ class UpCdbConverter:
         constraints = []
         poses = {}
 
-        print("GETTING MOTION OBJECT INFO")
+        # print("GETTING MOTION OBJECT INFO")
 
         for utype in problem.user_types:
-            print(utype, type(utype))
+            # print(utype, type(utype))
             if utype.is_configuration_type():
                 m = utype.occupancy_map
 
@@ -644,7 +643,6 @@ class UpCdbConverter:
 
             elif utype.is_movable_type():
                 for o in problem.objects(utype):
-                    # TODO: Add REEDSSHEP and Turning Radius to CDB
                     name = Sym(o.name)
                     footprint = List([Tuple(Real(p[0]), Real(p[1])) for p in o.footprint])
                     parameters = []
