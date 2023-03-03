@@ -164,6 +164,8 @@ class EngineImpl(unified_planning.engines.Engine):
         # -> sequence or partial-order based on EST in propagated STN
         op_map = {}
 
+        print(Logger.pretty_print(cdb, 0))
+
         for a in cdb.get((Sym("operator"))):
             op_map[a[Sym("name")]] = a
 
@@ -184,6 +186,10 @@ class EngineImpl(unified_planning.engines.Engine):
                 plan_stmts.append((earliest_start_time, s))
 
                 operator = op_map[variable]
+
+                print(earliest_start_time, ":", s)
+                print(Logger.pretty_print(operator, 1))
+
                 id_var = operator[Sym("id")]
                 interval_pattern = operator[Sym("interval")]
                 sub = interval_pattern.match(s[0])
@@ -256,6 +262,7 @@ class EngineImpl(unified_planning.engines.Engine):
     def supported_kind() -> ProblemKind:
         supported_kind = ProblemKind()
         supported_kind.set_problem_class('ACTION_BASED')
+        supported_kind.set_problem_class('TAMP')
         supported_kind.set_typing('FLAT_TYPING')
         supported_kind.set_typing('HIERARCHICAL_TYPING')
         supported_kind.set_conditions_kind("NEGATIVE_CONDITIONS")

@@ -32,6 +32,9 @@ selected = office_tamp
 solver = EngineImpl()
 result = solver.solve(selected)
 
+plotted = []
+ax = None
+fix = None
 
 for a in result.plan.actions:
     print(a)
@@ -51,9 +54,11 @@ for a in result.plan.actions:
                 if "resolution: " in l:
                     resolution = float(l.replace("resolution: ", "").strip())
             if image_file is not None:
-                im = Image.open(image_file)
-                fig, ax = plt.subplots()
-                ax.imshow(im)
+                if image_file not in plotted:
+                    im = Image.open(image_file)
+                    fig, ax = plt.subplots()
+                    ax.imshow(im)
+                    plotted.append(image_file)
 
                 for step in path:
                     x = step[0][0]/resolution
@@ -62,7 +67,7 @@ for a in result.plan.actions:
                     x_d = math.sin(w)
                     y_d = math.cos(w)
                     plt.arrow(x, im.height - y, x_d, y_d)
-                plt.show()
-                plt.waitforbuttonpress()
+plt.show()
+plt.waitforbuttonpress()
 
 

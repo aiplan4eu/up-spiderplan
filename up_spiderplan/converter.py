@@ -203,7 +203,7 @@ class UpCdbConverter:
                 preconditions.append(s)
             temporal.append(d)
             if op_id is not None and g_var in effect_vars:
-                temporal.append(Tuple([Sym("meets"), i, op_id]))
+                temporal.append(Tuple(Sym("before"), i, op_id, Tuple(Int(1), Int(1))))
             elif op_id is not None:
                 temporal.append(Tuple(Sym("contains"), i, op_id, Tuple(Int(1), Inf.pos()),Tuple(Int(1), Inf.pos())))
 
@@ -228,7 +228,7 @@ class UpCdbConverter:
                         preconditions.append(s)
                     temporal.append(d)
                     if op_id is not None and var in effect_vars:
-                        temporal.append(Tuple([Sym("meets"), i, op_id]))
+                        temporal.append(Tuple(Sym("before"), i, op_id, Tuple(Int(1),  Int(1))))
                     elif op_id is not None:
                         temporal.append(Tuple(Sym("contains"), i, op_id, Tuple(Int(1), Inf.pos()),Tuple(Int(1), Inf.pos())))
                 scope.append(fluents[fluent])
@@ -277,12 +277,12 @@ class UpCdbConverter:
                        self._convert_fnode(e.value))])
 
         d = Tuple([Sym("duration"), interval, Tuple([Int(1), Inf.pos()])])
-        m = Tuple([Sym("meets"), op_id, interval])
+        m = Tuple([Sym("before"), op_id, interval, Tuple(Int(1),  Int(1))])
 
         statement.append(s)
         if not durative:
             temporal.append(m)
-            m = Tuple([Sym("meets"), op_id, interval])
+            m = Tuple(Sym("before"), op_id, interval, Tuple(Int(1),  Int(1)))
         temporal.append(d)
         return Set([
             KeyVal(Sym("effects"), List(statement)),
