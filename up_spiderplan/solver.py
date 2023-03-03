@@ -207,7 +207,12 @@ class EngineImpl(unified_planning.engines.Engine):
 
         actions: List[up.plans.ActionInstance] = []
         # print("Plan statements:")
-        for _, s in plan_stmts:
+        for pair in cdb[Sym("goal.plan.latest")]:
+
+            print(plan_stmts)
+            print(pair)
+
+            s = pair[1]
             # print(s)
             id = instance_map[s]
 
