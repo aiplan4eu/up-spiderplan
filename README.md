@@ -6,14 +6,17 @@ A constraint-based planning engine for unified planning.
 
 Note: This will become more compact later. 
 
-Create and activate a new conda environment:
+Note: This requires a `docker` and `docker-compose` to be installed.
+
+
+Create and activate a Python 3.7 environment. Here we use conda:
 
     conda create --name up-sp-test python=3.7
     conda activate up-sp-test
     
 Install the Unified Planning library with the TAMP branch:
 
-    https://github.com/aiplan4eu/unified-planning.git
+    git clone https://github.com/aiplan4eu/unified-planning.git
     cd unified-planning
     git checkout add-tamp
     pip install -e .
