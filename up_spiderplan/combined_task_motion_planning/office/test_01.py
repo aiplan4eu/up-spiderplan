@@ -6,10 +6,12 @@ from planning_tests.commons.problem import TestCaseProblem
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-class TampOffice01(TestCaseProblem):
+class TampOffice01: # (TestCaseProblem):
 
     def __init__(self, expected_version):
-        TestCaseProblem.__init__(self, expected_version)
+        pass
+        # TestCaseProblem.__init__(self, expected_version)
+
 
     def get_problem(self):
         t_robot = MovableType("robot")
