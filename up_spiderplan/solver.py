@@ -86,9 +86,6 @@ class EngineImpl(unified_planning.engines.Engine):
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
         os.system("docker-compose up -d")
         os.chdir(curr_dir)
-        time.sleep(3.0)
-        # while not self.grpc_server_up():
-        #     time.sleep(1.0)
 
 
     def stop_grpc_server(self):
@@ -151,7 +148,19 @@ class EngineImpl(unified_planning.engines.Engine):
         # print(Logger.pretty_print(cdb, 0))
 
         self.start_grpc_server()
-        answer = spiderplan_proxy(cdb)
+        success = False
+        while not success:
+            from grpc._channel import _InactiveRpcError
+            try:
+                answer = spiderplan_proxy(cdb)
+                success = True
+            except _InactiveRpcError as e:
+                # print("Waiting for Spiderplan gRPC server...")
+                #print(e)
+                success = False
+                time.sleep(0.1)
+
+
         self.stop_grpc_server()
 
         # print("SpiderPlan Solution:")

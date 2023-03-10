@@ -1,5 +1,37 @@
 # up-spiderplan
+
 A constraint-based planning engine for unified planning.
+
+## Try it out!
+
+Note: This will become more compact later. 
+
+Create and activate a new conda environment:
+
+    conda create --name up-sp-test python=3.7
+    conda activate up-sp-test
+    
+Install the Unified Planning library with the TAMP branch:
+
+    https://github.com/aiplan4eu/unified-planning.git
+    cd unified-planning
+    git checkout add-tamp
+    pip install -e .
+
+
+Install up-spiderplan from pypi test repository:
+    
+    pip install -i https://test.pypi.org/simple/ up-spiderplan
+    
+    
+Clone the up-spiderplan repository to get a test case:
+    
+    git clone https://github.com/aiplan4eu/up-spiderplan.git
+    cd up-spiderplan
+    python up_spiderplan/test.py
+    
+This will build and run a docker container that hosts the spiderplan
+server. Therefore it will take a bit of time on the first run.
 
 ## Roadmap
 
@@ -25,4 +57,4 @@ A constraint-based planning engine for unified planning.
 
 ## Issues
 
-- [ ] Waiting for docker container does not work
+- [x] Waiting for docker container does not work
