@@ -20,6 +20,7 @@ Install the Unified Planning library with the TAMP branch:
     cd unified-planning
     git checkout add-tamp
     pip install -e .
+    cd ..
 
 
 Install up-spiderplan from pypi test repository:
