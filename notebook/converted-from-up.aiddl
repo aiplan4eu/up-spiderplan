@@ -1,0 +1,399 @@
+(org.aiddl.type.term
+	  problem
+	  {
+    temporal:
+      [
+        (release s1 (0 0))
+        (duration s1 (1 +INF))
+        (release s2 (0 0))
+        (duration s2 (1 +INF))
+        (release s3 (0 0))
+        (duration s3 (1 +INF))
+        (release s4 (0 0))
+        (duration s4 (1 +INF))
+        (release s5 (0 0))
+        (duration s5 (1 +INF))
+        (release s6 (0 0))
+        (duration s6 (1 +INF))
+        (release s7 (0 0))
+        (duration s7 (1 +INF))
+        (release s8 (0 0))
+        (duration s8 (1 +INF))
+        (release s9 (0 0))
+        (duration s9 (1 +INF))
+        (release s10 (0 0))
+        (duration s10 (1 +INF))
+        (release s11 (0 0))
+        (duration s11 (1 +INF))
+        (release s12 (0 0))
+        (duration s12 (1 +INF))
+        (release s13 (0 0))
+        (duration s13 (1 +INF))
+        (release s14 (0 0))
+        (duration s14 (1 +INF))
+        (release s15 (0 0))
+        (duration s15 (1 +INF))
+        (release s16 (0 0))
+        (duration s16 (1 +INF))
+        (release s17 (0 0))
+        (duration s17 (1 +INF))
+        (release s18 (0 0))
+        (duration s18 (1 +INF))
+        (release s19 (0 0))
+        (duration s19 (1 +INF))
+        (release s20 (0 0))
+        (duration s20 (1 +INF))
+        (release s21 (0 0))
+        (duration s21 (1 +INF))
+        (release s22 (0 0))
+        (duration s22 (1 +INF))
+        (release s23 (0 0))
+        (duration s23 (1 +INF))
+        (release s24 (0 0))
+        (duration s24 (1 +INF))
+        (release s25 (0 0))
+        (duration s25 (1 +INF))
+        (release s26 (0 0))
+        (duration s26 (1 +INF))
+        (release s27 (0 0))
+        (duration s27 (1 +INF))
+        (release s28 (0 0))
+        (duration s28 (1 +INF))
+        (release s29 (0 0))
+        (duration s29 (1 +INF))
+        (release s30 (0 0))
+        (duration s30 (1 +INF))
+        (release s31 (0 0))
+        (duration s31 (1 +INF))
+        (release s32 (0 0))
+        (duration s32 (1 +INF))
+        (release s33 (0 0))
+        (duration s33 (1 +INF))
+        (release s34 (0 0))
+        (duration s34 (1 +INF))
+        (release s35 (0 0))
+        (duration s35 (1 +INF))
+        (release s36 (0 0))
+        (duration s36 (1 +INF))
+        (release s37 (0 0))
+        (duration s37 (1 +INF))
+        (release s38 (0 0))
+        (duration s38 (1 +INF))
+        (release s39 (0 0))
+        (duration s39 (1 +INF))
+        (release s40 (0 0))
+        (duration s40 (1 +INF))
+        (release s41 (0 0))
+        (duration s41 (1 +INF))
+        (release s42 (0 0))
+        (duration s42 (1 +INF))
+        (release s43 (0 0))
+        (duration s43 (1 +INF))
+        (release s44 (0 0))
+        (duration s44 (1 +INF))
+        (release s45 (0 0))
+        (duration s45 (1 +INF))
+        (release s46 (0 0))
+        (duration s46 (1 +INF))
+        (release s47 (0 0))
+        (duration s47 (1 +INF))
+        (release s48 (0 0))
+        (duration s48 (1 +INF))
+        (release s49 (0 0))
+        (duration s49 (1 +INF))
+        (release s50 (0 0))
+        (duration s50 (1 +INF))
+        (release s51 (0 0))
+        (duration s51 (1 +INF))
+        (release s52 (0 0))
+        (duration s52 (1 +INF))
+        (release s53 (0 0))
+        (duration s53 (1 +INF))
+        (release s54 (0 0))
+        (duration s54 (1 +INF))
+        (release s55 (0 0))
+        (duration s55 (1 +INF))
+        (release s56 (0 0))
+        (duration s56 (1 +INF))
+        (duration G57 (1 +INF))
+        (duration G58 (1 +INF))
+        (duration G59 (1 +INF))
+        (duration G60 (1 +INF))
+      ]
+
+    signature:
+      {
+        (move robot robot_config robot_config):t_bool
+        (parcel_at parcel robot_config):t_bool
+        (robot_at robot robot_config):t_bool
+        (carries robot parcel):t_bool
+        (place robot robot_config parcel):t_bool
+        (pick robot robot_config parcel):t_bool
+      }
+
+    statement:
+      [
+        (s1 (carries r1 nothing):true)
+        (s2 (carries r2 nothing):true)
+        (s3 (parcel_at parcel-1 office-1):true)
+        (s4 (parcel_at parcel-2 office-6):true)
+        (s5 (robot_at r1 parking-1):true)
+        (s6 (robot_at r2 parking-2):true)
+        (s7 (robot_at r2 parking-1):false)
+        (s8 (robot_at r1 parking-2):false)
+        (s9 (robot_at r1 office-1):false)
+        (s10 (robot_at r2 office-1):false)
+        (s11 (robot_at r1 office-2):false)
+        (s12 (robot_at r2 office-2):false)
+        (s13 (robot_at r1 office-3):false)
+        (s14 (robot_at r2 office-3):false)
+        (s15 (robot_at r1 office-4):false)
+        (s16 (robot_at r2 office-4):false)
+        (s17 (robot_at r1 office-5):false)
+        (s18 (robot_at r2 office-5):false)
+        (s19 (robot_at r1 office-6):false)
+        (s20 (robot_at r2 office-6):false)
+        (s21 (robot_at r1 office-7):false)
+        (s22 (robot_at r2 office-7):false)
+        (s23 (robot_at r1 office-8):false)
+        (s24 (robot_at r2 office-8):false)
+        (s25 (parcel_at nothing parking-1):false)
+        (s26 (parcel_at parcel-1 parking-1):false)
+        (s27 (parcel_at parcel-2 parking-1):false)
+        (s28 (parcel_at nothing parking-2):false)
+        (s29 (parcel_at parcel-1 parking-2):false)
+        (s30 (parcel_at parcel-2 parking-2):false)
+        (s31 (parcel_at nothing office-1):false)
+        (s32 (parcel_at parcel-2 office-1):false)
+        (s33 (parcel_at nothing office-2):false)
+        (s34 (parcel_at parcel-1 office-2):false)
+        (s35 (parcel_at parcel-2 office-2):false)
+        (s36 (parcel_at nothing office-3):false)
+        (s37 (parcel_at parcel-1 office-3):false)
+        (s38 (parcel_at parcel-2 office-3):false)
+        (s39 (parcel_at nothing office-4):false)
+        (s40 (parcel_at parcel-1 office-4):false)
+        (s41 (parcel_at parcel-2 office-4):false)
+        (s42 (parcel_at nothing office-5):false)
+        (s43 (parcel_at parcel-1 office-5):false)
+        (s44 (parcel_at parcel-2 office-5):false)
+        (s45 (parcel_at nothing office-6):false)
+        (s46 (parcel_at parcel-1 office-6):false)
+        (s47 (parcel_at nothing office-7):false)
+        (s48 (parcel_at parcel-1 office-7):false)
+        (s49 (parcel_at parcel-2 office-7):false)
+        (s50 (parcel_at nothing office-8):false)
+        (s51 (parcel_at parcel-1 office-8):false)
+        (s52 (parcel_at parcel-2 office-8):false)
+        (s53 (carries r1 parcel-1):false)
+        (s54 (carries r2 parcel-1):false)
+        (s55 (carries r1 parcel-2):false)
+        (s56 (carries r2 parcel-2):false)
+      ]
+
+    domain:
+      {
+        robot:[r1 r2]
+        t_bool:[true false]
+        parcel:[nothing parcel-1 parcel-2]
+        robot_config:
+          [
+            parking-1
+            parking-2
+            office-1
+            office-2
+            office-3
+            office-4
+            office-5
+            office-6
+            office-7
+            office-8
+          ]
+
+      }
+
+    goal:
+      [
+        (G57 (robot_at r1 parking-1):true)
+        (G58 (robot_at r2 parking-2):true)
+        (G59 (parcel_at parcel-1 office-2):true)
+        (G60 (parcel_at parcel-2 office-3):true)
+      ]
+
+    operator:
+      {
+        (
+          name:(place ?robot ?loc ?parcel)
+          signature:[?robot:robot ?loc:robot_config ?parcel:parcel]
+          id:?ID
+          interval:(place ?ID)
+          preconditions:
+            [
+              ((P66 ?ID) (robot_at ?robot ?loc):true)
+              ((P67 ?ID) (carries ?robot ?parcel):true)
+              ((P68 ?ID) (parcel_at ?parcel ?loc):false)
+              ((P69 ?ID) (carries ?robot nothing):false)
+            ]
+
+          effects:
+            [
+              ((E1 ?ID) (carries ?robot ?parcel):false)
+              ((E2 ?ID) (carries ?robot nothing):true)
+              ((E3 ?ID) (parcel_at ?parcel ?loc):true)
+            ]
+
+          constraints:
+            [
+              temporal:
+                [
+                  (duration (place ?ID) (1 +INF))
+                  (before (place ?ID) (E1 ?ID) (1 1))
+                  (duration (E1 ?ID) (1 +INF))
+                  (before (place ?ID) (E2 ?ID) (1 1))
+                  (duration (E2 ?ID) (1 +INF))
+                  (before (place ?ID) (E3 ?ID) (1 1))
+                  (duration (E3 ?ID) (1 +INF))
+                  (duration (P66 ?ID) (1 +INF))
+                  (contains (P66 ?ID) (place ?ID) (1 +INF) (1 +INF))
+                  (duration (P67 ?ID) (1 +INF))
+                  (before (P67 ?ID) (place ?ID) (1 1))
+                  (duration (P68 ?ID) (1 +INF))
+                  (before (P68 ?ID) (place ?ID) (1 1))
+                  (duration (P69 ?ID) (1 +INF))
+                  (before (P69 ?ID) (place ?ID) (1 1))
+                ]
+
+            ]
+
+        )
+
+        (
+          name:(pick ?robot ?loc ?parcel)
+          signature:[?robot:robot ?loc:robot_config ?parcel:parcel]
+          id:?ID
+          interval:(pick ?ID)
+          preconditions:
+            [
+              ((P62 ?ID) (robot_at ?robot ?loc):true)
+              ((P63 ?ID) (parcel_at ?parcel ?loc):true)
+              ((P64 ?ID) (carries ?robot nothing):true)
+              ((P65 ?ID) (carries ?robot ?parcel):false)
+            ]
+
+          effects:
+            [
+              ((E1 ?ID) (carries ?robot ?parcel):true)
+              ((E2 ?ID) (parcel_at ?parcel ?loc):false)
+              ((E3 ?ID) (carries ?robot nothing):false)
+            ]
+
+          constraints:
+            [
+              temporal:
+                [
+                  (duration (pick ?ID) (1 +INF))
+                  (before (pick ?ID) (E1 ?ID) (1 1))
+                  (duration (E1 ?ID) (1 +INF))
+                  (before (pick ?ID) (E2 ?ID) (1 1))
+                  (duration (E2 ?ID) (1 +INF))
+                  (before (pick ?ID) (E3 ?ID) (1 1))
+                  (duration (E3 ?ID) (1 +INF))
+                  (duration (P62 ?ID) (1 +INF))
+                  (contains (P62 ?ID) (pick ?ID) (1 +INF) (1 +INF))
+                  (duration (P63 ?ID) (1 +INF))
+                  (before (P63 ?ID) (pick ?ID) (1 1))
+                  (duration (P64 ?ID) (1 +INF))
+                  (before (P64 ?ID) (pick ?ID) (1 1))
+                  (duration (P65 ?ID) (1 +INF))
+                  (before (P65 ?ID) (pick ?ID) (1 1))
+                ]
+
+            ]
+
+        )
+
+        (
+          name:(move ?robot ?c_from ?c_to)
+          signature:[?robot:robot ?c_from:robot_config ?c_to:robot_config]
+          id:?ID
+          interval:(move ?ID)
+          preconditions:[((P61 ?ID) (robot_at ?robot ?c_from):true)]
+          effects:
+            [
+              ((E1 ?ID) (robot_at ?robot ?c_from):false)
+              ((E2 ?ID) (robot_at ?robot ?c_to):true)
+            ]
+
+          constraints:
+            [
+              temporal:
+                [
+                  (duration (move ?ID) (1 +INF))
+                  (before (move ?ID) (E1 ?ID) (1 1))
+                  (duration (E1 ?ID) (1 +INF))
+                  (before (move ?ID) (E2 ?ID) (1 1))
+                  (duration (E2 ?ID) (1 +INF))
+                  (duration (P61 ?ID) (1 +INF))
+                  (before (P61 ?ID) (move ?ID) (1 1))
+                ]
+
+              motion:[(path ?ID ?robot ?c_from ?c_to map-1 ?path)]
+            ]
+
+        )
+
+      }
+
+    motion:
+      {
+        (frame r1 [(-1.0 0.5) (1.0 0.5) (1.0 -0.5) (-1.0 -0.5)])
+        (frame r2 [(-1.0 0.5) (1.0 0.5) (1.0 -0.5) (-1.0 -0.5)])
+        (map map-1 "office-map-1.yaml")
+        (
+          robot
+          r1
+          [
+            name:r1
+            footprint:[(-1.0 0.5) (1.0 0.5) (1.0 -0.5) (-1.0 -0.5)]
+            model:ReedsSheppCar
+            turning-radius:2.0
+          ]
+
+        )
+
+        (
+          poses
+          map-1
+          [
+            parking-1:(46.0 26.0 4.71238898038469)
+            parking-2:(40.0 26.0 4.71238898038469)
+            office-1:(4.0 4.0 4.71238898038469)
+            office-2:(14.0 4.0 1.5707963267948966)
+            office-3:(24.0 4.0 4.71238898038469)
+            office-4:(32.0 4.0 4.71238898038469)
+            office-5:(4.0 24.0 4.71238898038469)
+            office-6:(14.0 24.0 1.5707963267948966)
+            office-7:(24.0 24.0 1.5707963267948966)
+            office-8:(32.0 24.0 1.5707963267948966)
+          ]
+
+        )
+
+        (
+          robot
+          r2
+          [
+            name:r2
+            footprint:[(-1.0 0.5) (1.0 0.5) (1.0 -0.5) (-1.0 -0.5)]
+            model:ReedsSheppCar
+            turning-radius:2.0
+          ]
+
+        )
+
+      }
+
+  }
+
+)
+
