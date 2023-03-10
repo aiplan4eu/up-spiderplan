@@ -25,13 +25,22 @@ Install the Unified Planning library with the TAMP branch:
 
 Install up-spiderplan from pypi test repository:
     
-    pip install -i https://test.pypi.org/simple/ up-spiderplan
+    pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple up-spiderplan
     
     
 Clone the up-spiderplan repository to get a test case:
     
     git clone https://github.com/aiplan4eu/up-spiderplan.git
     cd up-spiderplan
+    pip install -r requirements.txt
+    
+For visualization, this test also requires `matplotlib`:
+
+    pip install matplotlib
+    
+    
+Finally, we can run the test: 
+
     python up_spiderplan/test.py
     
 This will build and run a docker container that hosts the spiderplan

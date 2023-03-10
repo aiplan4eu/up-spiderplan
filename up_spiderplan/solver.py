@@ -173,7 +173,7 @@ class EngineImpl(unified_planning.engines.Engine):
         # -> sequence or partial-order based on EST in propagated STN
         op_map = {}
 
-        print(Logger.pretty_print(cdb, 0))
+        # print(Logger.pretty_print(cdb, 0))
 
         for a in cdb.get((Sym("operator"))):
             op_map[a[Sym("name")]] = a
@@ -196,8 +196,8 @@ class EngineImpl(unified_planning.engines.Engine):
 
                 operator = op_map[variable]
 
-                print(earliest_start_time, ":", s)
-                print(Logger.pretty_print(operator, 1))
+                # print(earliest_start_time, ":", s)
+                # print(Logger.pretty_print(operator, 1))
 
                 id_var = operator[Sym("id")]
                 interval_pattern = operator[Sym("interval")]
@@ -218,8 +218,8 @@ class EngineImpl(unified_planning.engines.Engine):
         # print("Plan statements:")
         for pair in cdb[Sym("goal.plan.latest")]:
 
-            print(plan_stmts)
-            print(pair)
+            # print(plan_stmts)
+            # print(pair)
 
             s = pair[1]
             # print(s)

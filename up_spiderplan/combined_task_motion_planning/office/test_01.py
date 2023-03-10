@@ -1,7 +1,7 @@
 import math
 import os
 from unified_planning.shortcuts import *
-from planning_tests.commons.problem import TestCaseProblem
+# from planning_tests.commons.problem import TestCaseProblem
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
