@@ -23,11 +23,11 @@ office_tamp_01 = TampOffice01(1).get_problem()
 office_tamp_02 = TampOffice02(1).get_problem()
 office_tamp_03 = TampOffice03(1).get_problem()
 
-selected = office_tamp_03
+selected = office_tamp_01
 
 # print(selected)
 
-solver = EngineImpl()
+solver = EngineImpl(run_docker=True)
 result = solver.solve(selected)
 
 if result.status in results.POSITIVE_OUTCOMES:

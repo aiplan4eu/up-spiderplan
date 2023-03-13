@@ -23,6 +23,7 @@ import org.spiderplan.solver.temporal.TemporalConstraintSolver
 import org.spiderplan.solver.SpiderPlan.Type.*
 import org.aiddl.common.scala.planning.PlanningTerm.*
 import org.spiderplan.lib.coordination_oru.propagator.MotionPlanningPropagator
+import org.spiderplan.solver.pruning.PruningPropagator
 
 import scala.concurrent.ExecutionContext
 import java.util.logging.Level
@@ -47,6 +48,7 @@ object Main extends App {
         )
 
         override val propagators: Vector[Propagator] = Vector(
+          new PruningPropagator,
           new DomainConstraintSolver {
             logSetName("Domain")
           },

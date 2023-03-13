@@ -125,15 +125,15 @@ class TampOffice02: # (TestCaseProblem):
         problem.add_object(p1)
         problem.add_object(p2)
 
-        problem.set_initial_value(carries(r1, nothing), True)
-        problem.set_initial_value(carries(r2, nothing), True)
+        #problem.set_initial_value(carries(r1, nothing), True)
+        #problem.set_initial_value(carries(r2, nothing), True)
 
-        problem.set_initial_value(parcel_at(p1, office3), True)
+        #problem.set_initial_value(parcel_at(p1, office3), True)
 
-        problem.set_initial_value(robot_at(r1, park1), True)
+        problem.set_initial_value(robot_at(r1, office3), True)
 
         problem.add_goal(robot_at(r1, park1))
-        problem.add_goal(parcel_at(p1, office2))
+        # problem.add_goal(parcel_at(p1, office2))
 
         return problem
 

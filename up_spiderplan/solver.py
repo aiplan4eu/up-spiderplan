@@ -53,9 +53,9 @@ SPIDER_REPO = "https://github.com/aiplan4eu/up-spiderplan.git"
 SPIDER_PORT = 8061
 
 class EngineImpl(unified_planning.engines.Engine):
-    def __init__(self, **options):
+    def __init__(self, run_docker=True, **options):
+        self._run_docker = run_docker
         self._problem = None
-        # self.install_grpc_server()
         self.conv = UpCdbConverter()
         if len(options) > 0:
             raise
@@ -113,7 +113,7 @@ class EngineImpl(unified_planning.engines.Engine):
         if output_stream is not None:
             warnings.warn('SpiderPlan does not support output stream.', UserWarning)
 
-        if not self.grpc_server_installed():
+        if self._run_docker and not self.grpc_server_installed():
             self.install_grpc_server()
 
         self._problem = problem
@@ -147,7 +147,8 @@ class EngineImpl(unified_planning.engines.Engine):
         # print("SpiderPlan Problem:")
         # print(Logger.pretty_print(cdb, 0))
 
-        self.start_grpc_server()
+        if self._run_docker:
+            self.start_grpc_server()
         success = False
         while not success:
             from grpc._channel import _InactiveRpcError
@@ -160,8 +161,8 @@ class EngineImpl(unified_planning.engines.Engine):
                 success = False
                 time.sleep(0.1)
 
-
-        self.stop_grpc_server()
+        if self._run_docker:
+            self.stop_grpc_server()
 
         # print("SpiderPlan Solution:")
         # print(Logger.pretty_print(answer, 0))
