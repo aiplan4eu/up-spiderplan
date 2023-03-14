@@ -74,13 +74,6 @@ class EngineImpl(unified_planning.engines.Engine):
     def grpc_server_installed(self):
         return os.path.exists(SPIDER_dst  + SPIDER_PUBLIC)
 
-    # def grpc_server_up(self):
-    #     import socket
-    #     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    #         r = s.connect_ex(('localhost', SPIDER_PORT))
-    #         print(r)
-    #         return r == 0
-
     def start_grpc_server(self):
         curr_dir = os.getcwd()
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
@@ -89,6 +82,9 @@ class EngineImpl(unified_planning.engines.Engine):
 
 
     def stop_grpc_server(self):
+        os.system(f"docker cp up-spiderplan-server:/planner/search.dot ./search.dot")
+        os.system(f"docker cp up-spiderplan-server:/planner/stopwatch.txt ./stopwatch.txt")
+
         curr_dir = os.getcwd()
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
         os.system("docker-compose stop")

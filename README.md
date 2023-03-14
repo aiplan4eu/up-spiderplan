@@ -34,11 +34,6 @@ Clone the up-spiderplan repository to get a test case:
     cd up-spiderplan
     pip install -r requirements.txt
     
-For visualization, this test also requires `matplotlib`:
-
-    pip install matplotlib
-    
-    
 Finally, we can run the test: 
 
     python up_spiderplan/test.py

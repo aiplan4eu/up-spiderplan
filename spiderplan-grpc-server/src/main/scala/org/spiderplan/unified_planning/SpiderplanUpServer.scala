@@ -92,6 +92,7 @@ object Main extends App {
         }
         StopWatch.stop("[SpiderPlan] Main")
         spiderPlan.searchGraph2File("search.dot")
+        Files.write(Paths.get("stopwatch.txt"), StopWatch.summary.getBytes(StandardCharsets.UTF_8))
         println(StopWatch.summary)
         r
       } catch {
