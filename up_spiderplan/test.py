@@ -1,4 +1,3 @@
-from unified_planning.test.examples import get_example_problems
 import unified_planning.engines.results as results
 from combined_task_motion_planning.office.test_01 import TampOffice01
 from combined_task_motion_planning.office.test_02 import TampOffice02
@@ -12,16 +11,6 @@ from solver import EngineImpl
 
 from util import plot_path
 
-problems = get_example_problems()
-
-basic = problems["basic"].problem
-basic_nc = problems["basic_nested_conjunctions"].problem
-robot = problems["robot"].problem
-basic_wc = problems["basic_with_costs"].problem
-counter_2_50 = problems["counter_to_50"].problem
-match_cellar = problems["matchcellar"].problem
-robot_no_neg = problems["robot_no_negative_preconditions"].problem
-
 # tamp = problems["tamp_feasible"].problem
 
 office_tamp_01 = TampOffice01(1).get_problem()
@@ -30,7 +19,7 @@ office_tamp_03 = TampOffice03(1).get_problem()
 
 selected = TampConstruction01(1).get_problem()
 
-# print(selected)
+print(selected)
 
 solver = EngineImpl(run_docker=True)
 result = solver.solve(selected)

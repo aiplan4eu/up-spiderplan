@@ -1,5 +1,9 @@
 package org.spiderplan.unified_planning
 
+import java.util.logging.Level
+import java.nio.file.{Paths, Files}
+import java.nio.charset.StandardCharsets
+
 import org.aiddl.common.scala.execution.Actor.Status
 import org.aiddl.core.scala.util.StopWatch
 import org.aiddl.core.scala.container.Container
@@ -26,7 +30,6 @@ import org.spiderplan.lib.coordination_oru.propagator.MotionPlanningPropagator
 import org.spiderplan.solver.pruning.PruningPropagator
 
 import scala.concurrent.ExecutionContext
-import java.util.logging.Level
 
 object Main extends App {
   object spiderPlan extends Function {
