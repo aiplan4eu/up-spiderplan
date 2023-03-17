@@ -7,21 +7,17 @@ from combined_task_motion_planning.construction.test_01 import TampConstruction0
 from combined_task_motion_planning.construction.test_02 import TampConstruction02
 from combined_task_motion_planning.construction.test_03 import TampConstruction03
 
+from combined_task_motion_planning.logistics.test_01 import TampLogistics01
+
 from solver import EngineImpl
 
 from util import plot_path
 
-# tamp = problems["tamp_feasible"].problem
-
-office_tamp_01 = TampOffice01(1).get_problem()
-office_tamp_02 = TampOffice02(1).get_problem()
-office_tamp_03 = TampOffice03(1).get_problem()
-
-selected = TampConstruction01(1).get_problem()
+selected = TampLogistics01(1).get_problem()
 
 print(selected)
 
-solver = EngineImpl(run_docker=True)
+solver = EngineImpl(run_docker=False)
 result = solver.solve(selected)
 
 if result.status in results.POSITIVE_OUTCOMES:

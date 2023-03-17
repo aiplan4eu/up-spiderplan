@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
-   sodipodi:docname="drawing.svg"
+   sodipodi:docname="logistics-map-1.svg"
    inkscape:export-filename="/home/uekn/Repositories/unified-planning/up-spiderplan/up_spiderplan/combined_task_motion_planning/logistics/logistics-map-1.png"
    inkscape:export-xdpi="25.4"
    inkscape:export-ydpi="25.4"
@@ -28,12 +28,12 @@
      showgrid="false"
      width="500mm"
      inkscape:zoom="0.32026164"
-     inkscape:cx="844.6219"
-     inkscape:cy="946.10143"
-     inkscape:window-width="1846"
-     inkscape:window-height="1136"
-     inkscape:window-x="1754"
-     inkscape:window-y="1107"
+     inkscape:cx="844.62192"
+     inkscape:cy="944.54022"
+     inkscape:window-width="1920"
+     inkscape:window-height="1043"
+     inkscape:window-x="1680"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      inkscape:snap-page="true" />
@@ -73,11 +73,11 @@
        x="186.81538"
        y="10.263411" />
     <rect
-       style="fill:#ffffff;stroke:none;stroke-width:10;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:18.1202;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect1240"
-       width="10.273595"
+       width="33.7327"
        height="33.428715"
-       x="252.72708"
+       x="238.9986"
        y="151.04601" />
     <rect
        style="fill:#000002;fill-opacity:1;stroke:#000000;stroke-width:8.40056;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
