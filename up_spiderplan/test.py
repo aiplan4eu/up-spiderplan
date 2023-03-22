@@ -13,11 +13,11 @@ from solver import EngineImpl
 
 from util import plot_path
 
-selected = TampLogistics01(1).get_problem()
+selected = TampOffice01(1).get_problem()
 
 print(selected)
 
-solver = EngineImpl(run_docker=False)
+solver = EngineImpl(run_docker=True)
 result = solver.solve(selected)
 
 if result.status in results.POSITIVE_OUTCOMES:
