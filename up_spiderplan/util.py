@@ -1,3 +1,4 @@
+import os
 import math
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -14,14 +15,14 @@ def plot_path(result):
                 # print(f"  {key} -> {a.motion_paths[key]}")
                 # print(f"  Map: {key.starting.type.occupancy_map}")
                 map_file = key.starting.type.occupancy_map.filename
-                map_path = map_file.replace(map_file.split("/")[-1], "")
+                map_path = map_file.replace(map_file.split(os.sep)[-1], "")
                 path = a.motion_paths[key]
                 image_file = None
                 resolution = 1.0
                 f = open(map_file)
                 for l in f.readlines():
                     if "image: " in l:
-                        image_file = map_path + "/" + l.replace("image: ", "").strip()
+                        image_file = map_path + os.sep + l.replace("image: ", "").strip()
                     if "resolution: " in l:
                         resolution = float(l.replace("resolution: ", "").strip())
                 if image_file is not None:

@@ -61,14 +61,16 @@ class EngineImpl(unified_planning.engines.Engine):
             raise
 
     def copy_file_to_container(self, path, name):
-        os.system(f"docker cp {path}/{name} up-spiderplan-server:/planner/{name}")
+        cmd = f'docker cp "{path}/{name}" up-spiderplan-server:/planner/{name}'
+        print("CMD:", cmd)
+        os.system(cmd)
 
     def install_grpc_server(self):
         subprocess.run(["git", "clone", "-b", SPIDER_TAG, SPIDER_REPO])
         shutil.move(SPIDER_PUBLIC, SPIDER_dst)
         curr_dir = os.getcwd()
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
-        os.system("docker-compose build")
+        os.system("docker compose build")
         os.chdir(curr_dir)
 
     def grpc_server_installed(self):
@@ -77,7 +79,7 @@ class EngineImpl(unified_planning.engines.Engine):
     def start_grpc_server(self):
         curr_dir = os.getcwd()
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
-        os.system("docker-compose up -d")
+        os.system("docker compose up -d")
         os.chdir(curr_dir)
 
 
@@ -87,7 +89,7 @@ class EngineImpl(unified_planning.engines.Engine):
 
         curr_dir = os.getcwd()
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
-        os.system("docker-compose stop")
+        os.system("docker compose stop")
         os.chdir(curr_dir) 
 
 
