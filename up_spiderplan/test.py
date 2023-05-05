@@ -1,4 +1,7 @@
 import unified_planning.engines.results as results
+
+from unified_planning.test.examples import tamp
+
 from combined_task_motion_planning.office.test_01 import TampOffice01
 from combined_task_motion_planning.office.test_02 import TampOffice02
 from combined_task_motion_planning.office.test_03 import TampOffice03
@@ -23,6 +26,7 @@ result = solver.solve(selected)
 if result.status in results.POSITIVE_OUTCOMES:
     for a in result.plan.actions:
         print(a)
+        print(a.motion_paths)
 
     plot_path(result)
 else:

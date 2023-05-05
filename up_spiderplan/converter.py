@@ -615,7 +615,7 @@ class UpCdbConverter:
                     self.map_look_up[m] = name
 
                     # Copy YAML and image file into running Docker container
-                    filename = m.filename.split("/")[-1]
+                    filename = m.filename.split(os.sep)[-1]
                     path = m.filename.replace(filename, "")
                     image_filename = None
                     f = open(m.filename)
@@ -624,8 +624,9 @@ class UpCdbConverter:
                             image_filename = l.split("image: ")[1].strip()
                     f.close()
                     self.map_files[name] = m.filename
-                    cmd_yaml = f"docker cp {path}/{filename} up-spiderplan-server:/planner/{filename}"
-                    cmd_image = f"docker cp {path}/{image_filename} up-spiderplan-server:/planner/{image_filename}"
+                        
+                    cmd_yaml = f'docker cp "{path}{os.sep}{filename}" up-spiderplan-server:/planner/{filename}'
+                    cmd_image = f'docker cp "{path}{os.sep}{image_filename}" up-spiderplan-server:/planner/{image_filename}'
                     os.system(cmd_yaml)
                     os.system(cmd_image)
 
