@@ -1,4 +1,4 @@
 aiddl-core==0.3.0
 aiddl-external-grpc==0.1.4
-unified-planning>=0.6.0
+unified-planning>=1.0.0
 matplotlib==3.5.3

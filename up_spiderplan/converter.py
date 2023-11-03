@@ -6,7 +6,6 @@ from unified_planning.model.tamp.objects import MotionModels
 from unified_planning.model import InstantaneousAction, StartTiming, TimepointKind, Timing, TimeInterval
 from unified_planning.model.tamp import InstantaneousMotionAction, Waypoints, ConfigurationObject
 from unified_planning.shortcuts import ConfigurationType
-from unified_planning.test.examples import get_example_problems
 from unified_planning.model.operators import OperatorKind
 from unified_planning.model.problem import Problem
 

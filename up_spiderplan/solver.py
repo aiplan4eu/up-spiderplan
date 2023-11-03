@@ -52,7 +52,9 @@ SPIDER_TAG = "master"
 SPIDER_REPO = "https://github.com/aiplan4eu/up-spiderplan.git"
 SPIDER_PORT = 8061
 
-class EngineImpl(unified_planning.engines.Engine):
+class EngineImpl(
+    unified_planning.engines.Engine,
+    unified_planning.engines.mixins.OneshotPlannerMixin):
     def __init__(self, run_docker=True, **options):
         self._run_docker = run_docker
         self._problem = None

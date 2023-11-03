@@ -16,7 +16,7 @@ from solver import EngineImpl
 
 from util import plot_path
 
-selected = TampOffice01(1).get_problem()
+selected = TampOffice03(1).get_problem()
 
 print(selected)
 

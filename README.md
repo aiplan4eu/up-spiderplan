@@ -49,6 +49,12 @@ server. Therefore it will take a bit of time on the first run.
 - [x] Fix spiderplan grpc server in docker
 - [x] Use docker to run server through up-spiderplan
 
+### 0.4.0 Fixes for Unified Planning 1.0.0 and UP test cases
+
+- UP dependency
+- Removed circular dependency which makes it impossible to load up-spiderplan as a up engine.
+- Fixed EngineImpl to extend OneShotMixin
+
 ## Issues
 
 - [x] Waiting for docker container does not work

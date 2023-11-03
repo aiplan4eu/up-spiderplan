@@ -32,84 +32,10 @@ import org.spiderplan.solver.pruning.PruningPropagator
 import scala.concurrent.ExecutionContext
 
 object Main extends App {
-  object spiderPlan extends Function {
-    def apply(cdb: Term): Term = {
-      val spiderPlan = new SpiderPlanGraphSearch(
-        Vector(
-          (new ForwardHeuristicWrapper(new FastForwardHeuristic), Num(1.0))
-          //(new ForwardHeuristicWrapper(new CausalGraphHeuristic), Num(1))
-          //(new ForwardHeuristicWrapper(new FastForwardHeuristic), Num(0.5))
-        )) {
-        self: SpiderPlanGraphSearch =>
 
-        override val preprocessors: Vector[function.Function] = Vector(
-          new TemporalConstraintSolver,
-          new CspPreprocessor {
-            logSetName("CSP Preprocessor")
-          },
-          new OperatorGrounder
-        )
-
-        override val propagators: Vector[Propagator] = Vector(
-          new PruningPropagator,
-          new DomainConstraintSolver {
-            logSetName("Domain")
-          },
-          new TemporalConstraintSolver, //{ setVerbose(verbosityLevel) }
-          new MotionPlanningPropagator
-        )
-
-        override val solvers: Vector[FlawResolver] = Vector(
-          new CspResolver {
-            logSetName("CSP")
-          },
-          new ForwardOpenGoalResolver(heuristic = None) {
-            logSetName("GoalResolver")
-            seenList = Some(self.seenList)
-          },
-        )
-      }
-      spiderPlan.logSetName("SpiderPlan")
-      spiderPlan.logConfigRecursive(Level.INFO)
-
-      StopWatch.recordedTimes.clear()
-
-      val c = new Container()
-      val input = c.eval(cdb).asCol
-/*
-      val statements = SetTerm(input(Statement).asCol.filter( s =>
-        input(OpenGoal).asCol.exists( g => g(1) unifiable s(1) )
-        || input(Operator).asCol.exists( o => o(Preconditions).asCol.exists( p => p(1) unifiable s(1) ) ) ).toSet)
-
-      println(s"A: ${input(Statement).asCol.length} B: ${statements.asCol.length}")
-
-      val acs = SetTerm(input(Temporal).asCol.filter(c => statements.exists(s => c(0) == s(0) || c(1) == s(0) )).toSet)
-      println(s"A: ${input(Temporal).asCol.length} B: ${acs.asCol.length}")
-      */
-
-      try {
-        StopWatch.start("[SpiderPlan] Main")
-        val r = spiderPlan.solve(input) match {
-          case Some(solution) => solution
-          case None => Sym("NIL")
-        }
-        StopWatch.stop("[SpiderPlan] Main")
-        spiderPlan.searchGraph2File("search.dot")
-        Files.write(Paths.get("stopwatch.txt"), StopWatch.summary.getBytes(StandardCharsets.UTF_8))
-        println(StopWatch.summary)
-        r
-      } catch {
-        case e: Exception => {
-          e.printStackTrace()
-          Sym("NIL")
-        }
-      }
-
-    }
-  }
 
   val c = new Container()
-  c.addFunction(Sym("org.spiderplan.unified-planning.basic-graph-search"), spiderPlan)
+  c.addFunction(Sym("org.spiderplan.unified-planning.basic-graph-search"), SpiderPlanInstance)
   val server = new ContainerServer(ExecutionContext.global, 8061, c)
 
   server.start()
