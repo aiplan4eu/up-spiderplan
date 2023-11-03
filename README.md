@@ -1,4 +1,4 @@
-# up-spiderplan
+# Integration of Spiderplan with the Unified Planning Library
 
 A constraint-based planning engine for unified planning.
 
@@ -32,11 +32,11 @@ server. Therefore it will take a bit of time on the first run.
 Spiderplan solves hybrid planning problems by combining preprocessors, propagators and solvers for all required constraint types.
 Temporal propgatation is needed even for classical planning because under the hood Spiderplan is a temporal interval based planner.
 
-Search space: graph
-Heuristic: Fast forward
-Preprocessors: temporal propagation, constraints processing and operator grounding. 
-Propagators: pruning, domain constraints, temporal constraints, motion planning
-Solvers: constraint processing, forward goal resolver
+- *Search space:* graph
+- *Heuristic:* Fast forward
+- *Preprocessors:* temporal propagation, constraints processing and operator grounding. 
+- *Propagators:* pruning, domain constraints, temporal constraints, motion planning
+- *Solvers:* constraint processing, forward goal resolver
 
 ## Planning Approaches of UP supported
 
