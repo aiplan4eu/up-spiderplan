@@ -22,7 +22,7 @@ Clone the up-spiderplan repository to get a test case:
     
 Finally, we can run the test: 
 
-    python up_spiderplan/test.py
+    python tests/test.py
     
 This will build and run a docker container that hosts the spiderplan
 server. Therefore it will take a bit of time on the first run.
