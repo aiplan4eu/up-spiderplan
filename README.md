@@ -27,6 +27,25 @@ Finally, we can run the test:
 This will build and run a docker container that hosts the spiderplan
 server. Therefore it will take a bit of time on the first run.
 
+## Default Configuration
+
+Spiderplan solves hybrid planning problems by combining preprocessors, propagators and solvers for all required constraint types.
+Temporal propgatation is needed even for classical planning because under the hood Spiderplan is a temporal interval based planner.
+
+Search space: graph
+Heuristic: Fast forward
+Preprocessors: temporal propagation, constraints processing and operator grounding. 
+Propagators: pruning, domain constraints, temporal constraints, motion planning
+Solvers: constraint processing, forward goal resolver
+
+## Planning Approaches of UP supported
+
+Combined task and motion planning with Reeds Shepp car motion model. 
+
+## Operation Modes
+
+Oneshot planning
+
 ## Roadmap
 
 ### 0.1.0 Basic UP Support
