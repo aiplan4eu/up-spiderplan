@@ -1,0 +1,383 @@
+(#mod self classical-1)
+
+(org.aiddl.type.term
+	  problem
+      	  {
+          statement:
+            [
+              (s1 (next level1 level0):true)
+              (s2 (ready-to-load goods1 market1 level0):true)
+              (s3 (stored goods1 level0):true)
+              (s4 (loaded goods1 truck1 level0):true)
+              (s5 (connected depot1 market1):true)
+              (s6 (connected market1 depot1):true)
+              (s7 (on-sale goods1 market1 level1):true)
+              (s8 (at truck1 depot1):true)
+              (s9 (loaded goods1 truck1 level1):false)
+              (s10 (ready-to-load goods1 market1 level1):false)
+              (s11 (stored goods1 level1):false)
+              (s12 (on-sale goods1 market1 level0):false)
+              (s13 (next level0 level0):false)
+              (s14 (next level0 level1):false)
+              (s15 (next level1 level1):false)
+              (s16 (at truck1 market1):false)
+              (s17 (connected market1 market1):false)
+              (s18 (connected depot1 depot1):false)
+            ]
+
+          motion:{}
+          temporal:
+            [
+              (release s1 (0 0))
+              (duration s1 (1 +INF))
+              (release s2 (0 0))
+              (duration s2 (1 +INF))
+              (release s3 (0 0))
+              (duration s3 (1 +INF))
+              (release s4 (0 0))
+              (duration s4 (1 +INF))
+              (release s5 (0 0))
+              (duration s5 (1 +INF))
+              (release s6 (0 0))
+              (duration s6 (1 +INF))
+              (release s7 (0 0))
+              (duration s7 (1 +INF))
+              (release s8 (0 0))
+              (duration s8 (1 +INF))
+              (release s9 (0 0))
+              (duration s9 (1 +INF))
+              (release s10 (0 0))
+              (duration s10 (1 +INF))
+              (release s11 (0 0))
+              (duration s11 (1 +INF))
+              (release s12 (0 0))
+              (duration s12 (1 +INF))
+              (release s13 (0 0))
+              (duration s13 (1 +INF))
+              (release s14 (0 0))
+              (duration s14 (1 +INF))
+              (release s15 (0 0))
+              (duration s15 (1 +INF))
+              (release s16 (0 0))
+              (duration s16 (1 +INF))
+              (release s17 (0 0))
+              (duration s17 (1 +INF))
+              (release s18 (0 0))
+              (duration s18 (1 +INF))
+              (duration G19 (1 +INF))
+            ]
+
+          operator:
+            {
+              (
+                name:(drive ?t ?from ?to)
+                signature:[?t:truck ?from:place ?to:place]
+                id:?ID
+                interval:(drive ?ID)
+                preconditions:
+                  [((P22 ?ID) (at ?t ?from):?x20) ((P23 ?ID) (connected ?from ?to):?x21)]
+                effects:[((E1 ?ID) (at ?t ?from):false) ((E2 ?ID) (at ?t ?to):true)]
+                constraints:
+                  [
+                    temporal:
+                      [
+                        (duration (drive ?ID) (1 +INF))
+                        (before (drive ?ID) (E1 ?ID) (1 1))
+                        (duration (E1 ?ID) (1 +INF))
+                        (before (drive ?ID) (E2 ?ID) (1 1))
+                        (duration (E2 ?ID) (1 +INF))
+                        (duration (P22 ?ID) (1 +INF))
+                        (before (P22 ?ID) (drive ?ID) (1 1))
+                        (duration (P23 ?ID) (1 +INF))
+                        (contains (P23 ?ID) (drive ?ID) (1 +INF) (1 +INF))
+                      ]
+
+                    csp:
+                      [
+                        variables:[?x20 ?x21]
+                        domains:[?x20:[true false] ?x21:[true false]]
+                        constraints:
+                          {
+                            (
+                              (?x20 ?x21)
+                              (org.aiddl.eval.lambda (?x20 ?x21) (org.aiddl.eval.logic.and ?x20 ?x21))
+                            )
+
+                          }
+
+                      ]
+
+                  ]
+
+              )
+
+              (
+                name:(load ?g ?t ?m ?l1 ?l2 ?l3 ?l4)
+                signature:[?g:goods ?t:truck ?m:market ?l1:level ?l2:level ?l3:level ?l4:level]
+                id:?ID
+                interval:(load ?ID)
+                preconditions:
+                  [
+                    ((P29 ?ID) (at ?t ?m):?x24)
+                    ((P30 ?ID) (loaded ?g ?t ?l3):?x25)
+                    ((P31 ?ID) (ready-to-load ?g ?m ?l2):?x26)
+                    ((P32 ?ID) (next ?l2 ?l1):?x27)
+                    ((P33 ?ID) (next ?l4 ?l3):?x28)
+                  ]
+
+                effects:
+                  [
+                    ((E1 ?ID) (loaded ?g ?t ?l4):true)
+                    ((E2 ?ID) (loaded ?g ?t ?l3):false)
+                    ((E3 ?ID) (ready-to-load ?g ?m ?l1):true)
+                    ((E4 ?ID) (ready-to-load ?g ?m ?l2):false)
+                  ]
+
+                constraints:
+                  [
+                    temporal:
+                      [
+                        (duration (load ?ID) (1 +INF))
+                        (before (load ?ID) (E1 ?ID) (1 1))
+                        (duration (E1 ?ID) (1 +INF))
+                        (before (load ?ID) (E2 ?ID) (1 1))
+                        (duration (E2 ?ID) (1 +INF))
+                        (before (load ?ID) (E3 ?ID) (1 1))
+                        (duration (E3 ?ID) (1 +INF))
+                        (before (load ?ID) (E4 ?ID) (1 1))
+                        (duration (E4 ?ID) (1 +INF))
+                        (duration (P29 ?ID) (1 +INF))
+                        (contains (P29 ?ID) (load ?ID) (1 +INF) (1 +INF))
+                        (duration (P30 ?ID) (1 +INF))
+                        (before (P30 ?ID) (load ?ID) (1 1))
+                        (duration (P31 ?ID) (1 +INF))
+                        (before (P31 ?ID) (load ?ID) (1 1))
+                        (duration (P32 ?ID) (1 +INF))
+                        (contains (P32 ?ID) (load ?ID) (1 +INF) (1 +INF))
+                        (duration (P33 ?ID) (1 +INF))
+                        (contains (P33 ?ID) (load ?ID) (1 +INF) (1 +INF))
+                      ]
+
+                    csp:
+                      [
+                        variables:[?x24 ?x25 ?x26 ?x27 ?x28]
+                        domains:
+                          [
+                            ?x24:[true false]
+                            ?x25:[true false]
+                            ?x26:[true false]
+                            ?x27:[true false]
+                            ?x28:[true false]
+                          ]
+
+                        constraints:
+                          {
+                            (
+                              (?x24 ?x25 ?x26 ?x27 ?x28)
+                              (
+                                org.aiddl.eval.lambda
+                                (?x24 ?x25 ?x26 ?x27 ?x28)
+                                (org.aiddl.eval.logic.and ?x24 ?x25 ?x26 ?x27 ?x28)
+                              )
+
+                            )
+
+                          }
+
+                      ]
+
+                  ]
+
+              )
+
+              (
+                name:(buy ?t ?g ?m ?l1 ?l2 ?l3 ?l4)
+                signature:[?t:truck ?g:goods ?m:market ?l1:level ?l2:level ?l3:level ?l4:level]
+                id:?ID
+                interval:(buy ?ID)
+                preconditions:
+                  [
+                    ((P49 ?ID) (at ?t ?m):?x44)
+                    ((P50 ?ID) (on-sale ?g ?m ?l2):?x45)
+                    ((P51 ?ID) (ready-to-load ?g ?m ?l3):?x46)
+                    ((P52 ?ID) (next ?l2 ?l1):?x47)
+                    ((P53 ?ID) (next ?l4 ?l3):?x48)
+                  ]
+
+                effects:
+                  [
+                    ((E1 ?ID) (on-sale ?g ?m ?l1):true)
+                    ((E2 ?ID) (on-sale ?g ?m ?l2):false)
+                    ((E3 ?ID) (ready-to-load ?g ?m ?l4):true)
+                    ((E4 ?ID) (ready-to-load ?g ?m ?l3):false)
+                  ]
+
+                constraints:
+                  [
+                    temporal:
+                      [
+                        (duration (buy ?ID) (1 +INF))
+                        (before (buy ?ID) (E1 ?ID) (1 1))
+                        (duration (E1 ?ID) (1 +INF))
+                        (before (buy ?ID) (E2 ?ID) (1 1))
+                        (duration (E2 ?ID) (1 +INF))
+                        (before (buy ?ID) (E3 ?ID) (1 1))
+                        (duration (E3 ?ID) (1 +INF))
+                        (before (buy ?ID) (E4 ?ID) (1 1))
+                        (duration (E4 ?ID) (1 +INF))
+                        (duration (P49 ?ID) (1 +INF))
+                        (contains (P49 ?ID) (buy ?ID) (1 +INF) (1 +INF))
+                        (duration (P50 ?ID) (1 +INF))
+                        (before (P50 ?ID) (buy ?ID) (1 1))
+                        (duration (P51 ?ID) (1 +INF))
+                        (before (P51 ?ID) (buy ?ID) (1 1))
+                        (duration (P52 ?ID) (1 +INF))
+                        (contains (P52 ?ID) (buy ?ID) (1 +INF) (1 +INF))
+                        (duration (P53 ?ID) (1 +INF))
+                        (contains (P53 ?ID) (buy ?ID) (1 +INF) (1 +INF))
+                      ]
+
+                    csp:
+                      [
+                        variables:[?x44 ?x45 ?x46 ?x47 ?x48]
+                        domains:
+                          [
+                            ?x44:[true false]
+                            ?x45:[true false]
+                            ?x46:[true false]
+                            ?x47:[true false]
+                            ?x48:[true false]
+                          ]
+
+                        constraints:
+                          {
+                            (
+                              (?x44 ?x45 ?x46 ?x47 ?x48)
+                              (
+                                org.aiddl.eval.lambda
+                                (?x44 ?x45 ?x46 ?x47 ?x48)
+                                (org.aiddl.eval.logic.and ?x44 ?x45 ?x46 ?x47 ?x48)
+                              )
+
+                            )
+
+                          }
+
+                      ]
+
+                  ]
+
+              )
+
+              (
+                name:(unload ?g ?t ?d ?l1 ?l2 ?l3 ?l4)
+                signature:[?g:goods ?t:truck ?d:depot ?l1:level ?l2:level ?l3:level ?l4:level]
+                id:?ID
+                interval:(unload ?ID)
+                preconditions:
+                  [
+                    ((P39 ?ID) (at ?t ?d):?x34)
+                    ((P40 ?ID) (loaded ?g ?t ?l2):?x35)
+                    ((P41 ?ID) (stored ?g ?l3):?x36)
+                    ((P42 ?ID) (next ?l2 ?l1):?x37)
+                    ((P43 ?ID) (next ?l4 ?l3):?x38)
+                  ]
+
+                effects:
+                  [
+                    ((E1 ?ID) (loaded ?g ?t ?l1):true)
+                    ((E2 ?ID) (loaded ?g ?t ?l2):false)
+                    ((E3 ?ID) (stored ?g ?l4):true)
+                    ((E4 ?ID) (stored ?g ?l3):false)
+                  ]
+
+                constraints:
+                  [
+                    temporal:
+                      [
+                        (duration (unload ?ID) (1 +INF))
+                        (before (unload ?ID) (E1 ?ID) (1 1))
+                        (duration (E1 ?ID) (1 +INF))
+                        (before (unload ?ID) (E2 ?ID) (1 1))
+                        (duration (E2 ?ID) (1 +INF))
+                        (before (unload ?ID) (E3 ?ID) (1 1))
+                        (duration (E3 ?ID) (1 +INF))
+                        (before (unload ?ID) (E4 ?ID) (1 1))
+                        (duration (E4 ?ID) (1 +INF))
+                        (duration (P39 ?ID) (1 +INF))
+                        (contains (P39 ?ID) (unload ?ID) (1 +INF) (1 +INF))
+                        (duration (P40 ?ID) (1 +INF))
+                        (before (P40 ?ID) (unload ?ID) (1 1))
+                        (duration (P41 ?ID) (1 +INF))
+                        (before (P41 ?ID) (unload ?ID) (1 1))
+                        (duration (P42 ?ID) (1 +INF))
+                        (contains (P42 ?ID) (unload ?ID) (1 +INF) (1 +INF))
+                        (duration (P43 ?ID) (1 +INF))
+                        (contains (P43 ?ID) (unload ?ID) (1 +INF) (1 +INF))
+                      ]
+
+                    csp:
+                      [
+                        variables:[?x34 ?x35 ?x36 ?x37 ?x38]
+                        domains:
+                          [
+                            ?x34:[true false]
+                            ?x35:[true false]
+                            ?x36:[true false]
+                            ?x37:[true false]
+                            ?x38:[true false]
+                          ]
+
+                        constraints:
+                          {
+                            (
+                              (?x34 ?x35 ?x36 ?x37 ?x38)
+                              (
+                                org.aiddl.eval.lambda
+                                (?x34 ?x35 ?x36 ?x37 ?x38)
+                                (org.aiddl.eval.logic.and ?x34 ?x35 ?x36 ?x37 ?x38)
+                              )
+
+                            )
+
+                          }
+
+                      ]
+
+                  ]
+
+              )
+
+            }
+
+          signature:
+            {
+              (at truck place):t_bool
+              (on-sale goods market level):t_bool
+              (ready-to-load goods market level):t_bool
+              (load goods truck market level level level level):t_bool
+              (loaded goods truck level):t_bool
+              (drive truck place place):t_bool
+              (unload goods truck depot level level level level):t_bool
+              (buy truck goods market level level level level):t_bool
+              (next level level):t_bool
+              (connected place place):t_bool
+              (stored goods level):t_bool
+            }
+
+          goal:[(G19 (stored goods1 level1):true)]
+          domain:
+            {
+              level:[level0 level1]
+              t_bool:[true false]
+              market:[market1]
+              locatable:[goods1 truck1]
+              goods:[goods1]
+              place:[market1 depot1]
+              truck:[truck1]
+              depot:[depot1]
+            }
+
+        }
+)
+

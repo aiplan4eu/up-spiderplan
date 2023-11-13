@@ -124,11 +124,14 @@ class EngineImpl(
         solution_cdb = self._solve(cdb)
 
         if solution_cdb == Sym("NIL"):
-            return up.engines.PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
+            result = up.engines.PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
+            result.metrics = {"engine_internal_time": self.internal_engine_time}
+            return result
 
         plan = self._extract_plan(solution_cdb)
-        return up.engines.PlanGenerationResult(PlanGenerationResultStatus.SOLVED_SATISFICING, plan, self.name)
-
+        result = up.engines.PlanGenerationResult(PlanGenerationResultStatus.SOLVED_SATISFICING, plan, self.name)
+        result.metrics = {"engine_internal_time": self.internal_engine_time}
+        return result
 
     def _convert(self, problem: 'unified_planning.model.Problem') -> Term:
         return self.conv(problem)
@@ -154,6 +157,7 @@ class EngineImpl(
             from grpc._channel import _InactiveRpcError
             try:
                 answer = spiderplan_proxy(cdb)
+                self._extract_internal_engine_time()
                 success = True
             except _InactiveRpcError as e:
                 # print("Waiting for Spiderplan gRPC server...")
@@ -168,6 +172,14 @@ class EngineImpl(
         # print(Logger.pretty_print(answer, 0))
 
         return answer
+
+    def _extract_internal_engine_time(self):
+        f = open("stopwatch.txt", "r")
+        self.internal_engine_time = None
+        for line in f.readlines():
+            if line.startswith("[SpiderPlan] Main: "):
+                self.internal_engine_time = line.split()[2]
+        f.close()
 
     def _extract_plan(self, cdb: 'aiddl_core.representation.Set') -> up.plans.Plan:
         # Convert CDB to a plan type supported by UP

@@ -74,6 +74,15 @@ Oneshot planning
 - Removed circular dependency which makes it impossible to load up-spiderplan as a up engine.
 - Fixed EngineImpl to extend OneShotMixin
 
+### 0.5.0 Added Internal Engine Time to Result Metric
+
+- Adding internal engine time to result metric
+
+### 0.5.1 Fixes
+
+- Removed letter 's' from reported times
+- Fixed issue with new UP test cases
+
 ## Issues
 
 - [x] Waiting for docker container does not work

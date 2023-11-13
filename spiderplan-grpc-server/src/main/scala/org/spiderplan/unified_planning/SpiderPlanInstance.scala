@@ -33,7 +33,7 @@ object SpiderPlanInstance extends Function {
     val spiderPlan = new SpiderPlanGraphSearch(
       Vector(
         (new ForwardHeuristicWrapper(new FastForwardHeuristic), Num(1.0)),
-        (new ForwardHeuristicWrapper(new CausalGraphHeuristic), Num(1))
+        //(new ForwardHeuristicWrapper(new CausalGraphHeuristic), Num(1))
         //(new ForwardHeuristicWrapper(new FastForwardHeuristic), Num(0.5))
       )) {
       self: SpiderPlanGraphSearch =>
