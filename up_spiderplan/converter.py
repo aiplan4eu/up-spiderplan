@@ -61,10 +61,11 @@ def merge_cdb(a, b):
         
 class UpCdbConverter:
 
-    def __init__(self):
+    def __init__(self, docker_name):
         self.next_id = 0
         self.map_look_up = {}
         self.map_files = {}
+        self._docker_name = docker_name
 
     def __call__(self, problem):
         cdb = Set([])
@@ -624,8 +625,8 @@ class UpCdbConverter:
                     f.close()
                     self.map_files[name] = m.filename
                         
-                    cmd_yaml = f'docker cp "{path}{os.sep}{filename}" up-spiderplan-server:/planner/{filename}'
-                    cmd_image = f'docker cp "{path}{os.sep}{image_filename}" up-spiderplan-server:/planner/{image_filename}'
+                    cmd_yaml = f'docker cp "{path}{os.sep}{filename}" {self._docker_name}:/planner/{filename}'
+                    cmd_image = f'docker cp "{path}{os.sep}{image_filename}" {self._docker_name}:/planner/{image_filename}'
                     os.system(cmd_yaml)
                     os.system(cmd_image)
 

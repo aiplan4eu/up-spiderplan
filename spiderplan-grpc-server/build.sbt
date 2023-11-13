@@ -31,9 +31,9 @@ lazy val root = project
         libraryDependencies += "io.grpc" % "grpc-netty-shaded" % "1.51.0",
         libraryDependencies += "io.grpc" % "grpc-netty" % "1.51.0",
 
-        libraryDependencies += "org.aiddl" % "aiddl-core-scala" % "1.0.0",
-        libraryDependencies += "org.aiddl" % "aiddl-common-scala" % "0.1.0",
-        libraryDependencies += "org.aiddl" % "aiddl-external-grpc-scala" % "0.1.0",
+        libraryDependencies += "org.aiddl" % "aiddl-core-scala" % "1.1.1",
+        libraryDependencies += "org.aiddl" % "aiddl-common-scala" % "0.3.0",
+        libraryDependencies += "org.aiddl" % "aiddl-external-grpc-scala" % "0.2.0",
 
         libraryDependencies += "org.aiddl" % "aiddl-external-coordination_oru" % "0.1.0-SNAPSHOT",
         libraryDependencies += "org.spiderplan" % "spiderplan" % "0.3.0-SNAPSHOT",

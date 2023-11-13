@@ -35,9 +35,7 @@ RUN cd deps && git clone https://github.com/uwe-koeckemann/AIDDL.git \
  && cd AIDDL \
  && git checkout develop
 
-RUN cd deps/AIDDL/common/scala/ && sbt compile publishM2 \
- && cd ../../external/grpc/scala && sbt compile publishM2 \
- && cd ../../coordination_oru/ && sbt compile publishM2
+RUN cd deps/AIDDL/external/coordination_oru/ && sbt compile publishM2
 
 RUN cd deps && git clone https://github.com/uwe-koeckemann/SpiderPlan.git \
  && cd SpiderPlan/spiderplan && sbt compile publishM2 \

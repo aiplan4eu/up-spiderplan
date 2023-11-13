@@ -56,15 +56,18 @@ class EngineImpl(
     unified_planning.engines.Engine,
     unified_planning.engines.mixins.OneshotPlannerMixin):
     def __init__(self, run_docker=True, **options):
-        self._run_docker = run_docker
+        self._run_docker = True # run_docker
+        self._build_docker = False
+        self._docker_name = "up-spiderplan-server"
         self._problem = None
-        self.conv = UpCdbConverter()
+        if not self._build_docker:
+            self._docker_name = "up-spiderplan-server-web"
+        self.conv = UpCdbConverter(self._docker_name)
         if len(options) > 0:
             raise
 
     def copy_file_to_container(self, path, name):
-        cmd = f'docker cp "{path}/{name}" up-spiderplan-server:/planner/{name}'
-        print("CMD:", cmd)
+        cmd = f'docker cp "{path}/{name}" {self._docker_name}:/planner/{name}'
         os.system(cmd)
 
     def install_grpc_server(self):
@@ -72,7 +75,7 @@ class EngineImpl(
         shutil.move(SPIDER_PUBLIC, SPIDER_dst)
         curr_dir = os.getcwd()
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
-        os.system("docker compose build")
+        os.system("docker-compose build")
         os.chdir(curr_dir)
 
     def grpc_server_installed(self):
@@ -80,18 +83,26 @@ class EngineImpl(
 
     def start_grpc_server(self):
         curr_dir = os.getcwd()
-        os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
-        os.system("docker compose up -d")
+
+        if not self._build_docker:
+            os.chdir("/tmp/")
+            f = open("docker-compose.yml", "w")
+            f.write('version: "3.3"\nservices:\n  web:\n    container_name: up-spiderplan-server-web\n    image: uekn/up-spiderplan-server:v03\n    ports:\n      - "8061:8061"\n')
+            f.close()
+        else:
+            os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
+
+        os.system("docker-compose up -d")
         os.chdir(curr_dir)
 
 
     def stop_grpc_server(self):
-        os.system(f"docker cp up-spiderplan-server:/planner/search.dot ./search.dot")
-        os.system(f"docker cp up-spiderplan-server:/planner/stopwatch.txt ./stopwatch.txt")
+        os.system(f"docker cp {self._docker_name}:/planner/search.dot ./search.dot")
+        os.system(f"docker cp {self._docker_name}:/planner/stopwatch.txt ./stopwatch.txt")
 
         curr_dir = os.getcwd()
         os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
-        os.system("docker compose stop")
+        os.system("docker-compose stop")
         os.chdir(curr_dir) 
 
 
@@ -113,7 +124,7 @@ class EngineImpl(
         if output_stream is not None:
             warnings.warn('SpiderPlan does not support output stream.', UserWarning)
 
-        if self._run_docker and not self.grpc_server_installed():
+        if self._run_docker and self._build_docker and not self.grpc_server_installed():
             self.install_grpc_server()
 
         self._problem = problem
@@ -139,7 +150,7 @@ class EngineImpl(
     def _solve(self, cdb: 'aiddl_core.representation.Set') -> Term:
         # Call Spiderplan and get resulting CDB or NIL if no solution exists.
         container = Container()
-        spiderplan_proxy = GrpcFunction("localhost", SPIDER_PORT, Sym("org.spiderplan.unified-planning.basic-graph-search"), container)
+        spiderplan_proxy = GrpcFunction("0.0.0.0", SPIDER_PORT, Sym("org.spiderplan.unified-planning.basic-graph-search"), container)
 
         mod_name = Sym("aiplan4eu.up-spiderplan.up-input")
         container.add_module(mod_name)
@@ -157,16 +168,16 @@ class EngineImpl(
             from grpc._channel import _InactiveRpcError
             try:
                 answer = spiderplan_proxy(cdb)
-                self._extract_internal_engine_time()
                 success = True
             except _InactiveRpcError as e:
-                # print("Waiting for Spiderplan gRPC server...")
+                #print("Waiting for Spiderplan gRPC server...")
                 #print(e)
                 success = False
                 time.sleep(0.1)
 
         if self._run_docker:
             self.stop_grpc_server()
+            self._extract_internal_engine_time()
 
         # print("SpiderPlan Solution:")
         # print(Logger.pretty_print(answer, 0))
@@ -179,6 +190,7 @@ class EngineImpl(
         for line in f.readlines():
             if line.startswith("[SpiderPlan] Main: "):
                 self.internal_engine_time = line.split()[2]
+                # print(f"Internal engine time: {self.internal_engine_time}")
         f.close()
 
     def _extract_plan(self, cdb: 'aiddl_core.representation.Set') -> up.plans.Plan:
