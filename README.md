@@ -49,6 +49,11 @@ Oneshot planning
 
 ## Version History
 
+### 0.6.2 run_docker option used again
+
+- Removed issue where the run_rocker option was ignored for testing purposes
+- Added option to set build_docker to true to force building docker instead of using the image from docker hub 
+
 ### 0.6.1 docker-compose backwards compatability
 
 - Fixed usage of `docker compose` to `docker-compose` which should work (see https://docs.docker.com/compose/migrate/)

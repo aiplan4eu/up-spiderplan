@@ -55,9 +55,9 @@ SPIDER_PORT = 8061
 class EngineImpl(
     unified_planning.engines.Engine,
     unified_planning.engines.mixins.OneshotPlannerMixin):
-    def __init__(self, run_docker=True, **options):
-        self._run_docker = True # run_docker
-        self._build_docker = False
+    def __init__(self, run_docker=True, build_docker=False, **options):
+        self._run_docker = run_docker
+        self._build_docker = build_docker
         self._docker_name = "up-spiderplan-server"
         self._problem = None
         if not self._build_docker:
