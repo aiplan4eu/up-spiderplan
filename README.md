@@ -49,6 +49,16 @@ Oneshot planning
 
 ## Version History
 
+### 0.6.4 Added Docker Overhead to Result Object
+
+- Measuring docker overhead for AIPlan4EU evaluation
+- Moving measurement of internal engine time
+
+### 0.6.3 Fixed non-existing folder bug
+
+- The gRPC server is now stopped from withing the correct folder if build_docker is set to false.
+- Added a verbose option
+
 ### 0.6.2 run_docker option used again
 
 - Removed issue where the run_rocker option was ignored for testing purposes

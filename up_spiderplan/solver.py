@@ -55,11 +55,12 @@ SPIDER_PORT = 8061
 class EngineImpl(
     unified_planning.engines.Engine,
     unified_planning.engines.mixins.OneshotPlannerMixin):
-    def __init__(self, run_docker=True, build_docker=False, **options):
+    def __init__(self, run_docker=True, build_docker=False, verbose=False, **options):
         self._run_docker = run_docker
         self._build_docker = build_docker
         self._docker_name = "up-spiderplan-server"
         self._problem = None
+        self._verbose = verbose
         if not self._build_docker:
             self._docker_name = "up-spiderplan-server-web"
         self.conv = UpCdbConverter(self._docker_name)
@@ -74,7 +75,7 @@ class EngineImpl(
         subprocess.run(["git", "clone", "-b", SPIDER_TAG, SPIDER_REPO])
         shutil.move(SPIDER_PUBLIC, SPIDER_dst)
         curr_dir = os.getcwd()
-        os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
+        os.chdir(SPIDER_dst + SPIDER_PUBLIC + "/spiderplan-grpc-server")
         os.system("docker-compose build")
         os.chdir(curr_dir)
 
@@ -101,10 +102,12 @@ class EngineImpl(
         os.system(f"docker cp {self._docker_name}:/planner/stopwatch.txt ./stopwatch.txt")
 
         curr_dir = os.getcwd()
-        os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
+        if self._build_docker:
+            os.chdir(SPIDER_dst  + SPIDER_PUBLIC + "/spiderplan-grpc-server")
+        else:
+            os.chdir("/tmp/")
         os.system("docker-compose stop")
-        os.chdir(curr_dir) 
-
+        os.chdir(curr_dir)
 
     @property
     def name(self) -> str:
@@ -128,20 +131,31 @@ class EngineImpl(
             self.install_grpc_server()
 
         self._problem = problem
+        t_start_conversion = time.time()
         cdb = self._convert(problem)
+        t_conversion = time.time() - t_start_conversion
 
-        # print(Logger.pretty_print(cdb, 1))
+        if self._verbose:
+            print(f'Time to convert UP to CDB: {t_conversion}s')
 
         solution_cdb = self._solve(cdb)
 
+        if self._verbose:
+            print(f"Docker overhead: {self.docker_overhead_seconds}s")
+
         if solution_cdb == Sym("NIL"):
             result = up.engines.PlanGenerationResult(PlanGenerationResultStatus.UNSOLVABLE_PROVEN, None, self.name)
-            result.metrics = {"engine_internal_time": self.internal_engine_time}
+            result.metrics = {
+                "engine_internal_time": self.internal_engine_time,
+                "docker_overhead_time": self.docker_overhead_seconds
+            }
             return result
-
         plan = self._extract_plan(solution_cdb)
         result = up.engines.PlanGenerationResult(PlanGenerationResultStatus.SOLVED_SATISFICING, plan, self.name)
-        result.metrics = {"engine_internal_time": self.internal_engine_time}
+        result.metrics = {
+            "engine_internal_time": self.internal_engine_time,
+            "docker_overhead_time": self.docker_overhead_seconds
+        }
         return result
 
     def _convert(self, problem: 'unified_planning.model.Problem') -> Term:
@@ -158,40 +172,37 @@ class EngineImpl(
         container.set_entry(e, mod_name)
         container.export(mod_name, "converted-from-up.aiddl")
 
-        # print("SpiderPlan Problem:")
-        # print(Logger.pretty_print(cdb, 0))
-
+        t_run_docker_start = time.time()
         if self._run_docker:
             self.start_grpc_server()
         success = False
         while not success:
             from grpc._channel import _InactiveRpcError
             try:
+                t_run_docker = time.time() - t_run_docker_start
+                t_spiderplan_call_start = time.time()
                 answer = spiderplan_proxy(cdb)
+                t_spiderplan_call = time.time() - t_spiderplan_call_start
+                self.internal_engine_time = t_spiderplan_call
+                if self._verbose:
+                    print(f'Time to start docker service: {t_run_docker}s')
+                    print(f'Time in SpiderPlan from engine point of view: {t_spiderplan_call}s')
                 success = True
             except _InactiveRpcError as e:
-                #print("Waiting for Spiderplan gRPC server...")
-                #print(e)
+                if self._verbose:
+                    print("Waiting for Spiderplan gRPC server...")
                 success = False
-                time.sleep(0.1)
+                time.sleep(0.01)
 
         if self._run_docker:
+            t_stop_docker_start = time.time()
             self.stop_grpc_server()
-            self._extract_internal_engine_time()
-
-        # print("SpiderPlan Solution:")
-        # print(Logger.pretty_print(answer, 0))
+            t_stop_docker = time.time() - t_stop_docker_start
+            if self._verbose:
+                print(f'Time to stop docker: {t_stop_docker}')
+            self.docker_overhead_seconds = t_run_docker + t_stop_docker
 
         return answer
-
-    def _extract_internal_engine_time(self):
-        f = open("stopwatch.txt", "r")
-        self.internal_engine_time = None
-        for line in f.readlines():
-            if line.startswith("[SpiderPlan] Main: "):
-                self.internal_engine_time = line.split()[2]
-                # print(f"Internal engine time: {self.internal_engine_time}")
-        f.close()
 
     def _extract_plan(self, cdb: 'aiddl_core.representation.Set') -> up.plans.Plan:
         # Convert CDB to a plan type supported by UP
